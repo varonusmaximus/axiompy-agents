@@ -1,0 +1,26 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+
+# State files (should use remote backend in production)
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.*
+
+# Plan files
+tfplan
+*.tfplan
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Variable overrides (may contain secrets)
+*.tfvars
+!terraform.tfvars.example
+
+# CLI config
+.terraformrc
+terraform.rc

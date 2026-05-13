@@ -1,0 +1,72 @@
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "axiompy-agents"
+version = "2.0.0"
+description = "Reasoning and agent utilities (RAG, code review) for AxiomPy"
+readme = "README.md"
+license = "MIT"
+authors = ["Jorge Varona <varonusmaximus@users.noreply.github.com>"]
+keywords = ["agents", "rag", "llm", "reasoning", "axiompy"]
+packages = [{ include = "axiompy" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+axiompy = ">=2.0.0,<3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.4.0"
+pytest-cov = ">=4.1.0"
+
+[project]
+name = "axiompy-agents"
+version = "2.0.0"
+description = "Reasoning and agent utilities for AxiomPy"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jorge Varona", email = "varonusmaximus@users.noreply.github.com" }]
+dependencies = ["axiompy[servers,http,http-async,databases,storage]>=2.0.0,<3.0.0"]
+
+[project.urls]
+Repository = "https://github.com/varonusmaximus/axiompy-agents"
+Documentation = "https://github.com/varonusmaximus/axiompy-agents#readme"
+
+[project.optional-dependencies]
+# HTTP already in core extras above; optional heavier stacks for RAG / providers
+rag = [
+    "numpy>=1.24.0,<2.0",
+    "chromadb>=0.4.0",
+    "fastembed>=0.3.0",
+    "sentence-transformers>=2.2.0",
+    "transformers<4.50",
+    "pypdf>=4.0.0",
+]
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.18.0"]
+test-all = [
+    "numpy>=1.24.0,<2.0",
+    "chromadb>=0.4.0",
+    "fastembed>=0.3.0",
+    "sentence-transformers>=2.2.0",
+    "transformers<4.50",
+    "pypdf>=4.0.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "moto>=4.0.0",
+    "psycopg2-binary>=2.9.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["axiompy"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100

@@ -1,0 +1,90 @@
+# Code Review Agent - Docker Compose
+#
+# Deploys the AI-powered code review service with Ollama.
+# No API keys required - runs entirely on your infrastructure.
+# Default model: codellama
+#
+# Quick Start (from this directory):
+#   export GITHUB_TOKEN="ghp_your_token"
+#   docker compose up -d
+#
+# Configure GitHub webhook to POST to http://your-server:8080/webhook
+
+services:
+  # Ollama - Local LLM server
+  ollama:
+    image: ollama/ollama:latest
+    container_name: code-review-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    # Uncomment for GPU support (NVIDIA)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Model puller - Downloads codellama on first run
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: code-review-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["ollama", "pull", "${OLLAMA_MODEL:-codellama}"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+
+  # Code Review Service - FastAPI webhook handler
+  code-review:
+    build:
+      context: ../../../..
+      dockerfile: axiompy/agents/code_review/docker/Dockerfile
+    container_name: code-review-service
+    ports:
+      - "8080:8080"
+    environment:
+      # Required
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      
+      # Optional - Central rules repository
+      - RULES_REPO=${RULES_REPO:-varonusmaximus/axiompy}
+      - RULES_FILE=${RULES_FILE:-AGENTS.md}
+      
+      # Ollama configuration
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-codellama}
+      
+      # Security (optional but recommended)
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      ollama:
+        condition: service_healthy
+      ollama-pull:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+    name: code-review-ollama-data
+
