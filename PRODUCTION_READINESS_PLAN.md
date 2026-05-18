@@ -8,8 +8,10 @@
 
 ## Install
 
+CI and local dev install **axiompy 2.x from GitHub** (`varonusmaximus/axiompy@main`) because PyPI only has 0.2.x:
+
 ```bash
-pip install "axiompy[servers,http,http-async,databases,storage]>=2.0.0,<3.0.0"
+pip install "axiompy[servers,http,http-async,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@main"
 pip install -e ".[kernel,io-rag,test-all]"
 ```
 

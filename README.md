@@ -10,6 +10,15 @@ Requires **`axiompy`>=2** with server and HTTP-related extras.
 
 ## Install
 
+`axiompy` 2.x is not on PyPI yet. Install core from GitHub, then this package:
+
+```bash
+pip install "axiompy[servers,http,http-async,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@main"
+pip install -e ".[kernel,io-rag,test-all]"
+```
+
+When `axiompy>=2` is published to PyPI:
+
 ```bash
 pip install "axiompy[servers,http,http-async,databases,storage]>=2.0.0,<3.0.0"
 pip install -e ".[kernel,io-rag,test-all]"

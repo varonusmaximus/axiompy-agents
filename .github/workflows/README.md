@@ -4,7 +4,7 @@
 |----------|------|---------|
 | [`python-ci.yml`](python-ci.yml) | Push/PR to `main` or `develop`, or **workflow_dispatch** | **Ruff** (Python 3.11), **pytest + coverage** on **Python 3.12** (80% gate), **Bandit** + **pip-audit** |
 
-Install **`axiompy`** from PyPI before this package.
+**`axiompy` 2.x** is installed from `https://github.com/varonusmaximus/axiompy.git` (`main`) before this package (PyPI only has 0.2.x).
 
 ## Secrets
 
