@@ -7,7 +7,6 @@ DatasetMetadata and formatting it for use by AI agents and other components.
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 from axiompy.reasoning.metadata import DatasetMetadata
 

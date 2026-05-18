@@ -4,12 +4,12 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "axiompy-agents"
-version = "2.0.0"
-description = "Reasoning and agent utilities (RAG, code review) for AxiomPy"
+version = "3.0.0"
+description = "Hexagonal agent kernel, IO primitives, and reasoning for AxiomPy"
 readme = "README.md"
 license = "MIT"
 authors = ["Jorge Varona <varonusmaximus@users.noreply.github.com>"]
-keywords = ["agents", "rag", "llm", "reasoning", "axiompy"]
+keywords = ["agents", "kernel", "llm", "reasoning", "axiompy"]
 packages = [{ include = "axiompy" }]
 
 [tool.poetry.dependencies]
@@ -22,8 +22,8 @@ pytest-cov = ">=4.1.0"
 
 [project]
 name = "axiompy-agents"
-version = "2.0.0"
-description = "Reasoning and agent utilities for AxiomPy"
+version = "3.0.0"
+description = "Hexagonal agent kernel, IO primitives, and reasoning for AxiomPy"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -35,8 +35,9 @@ Repository = "https://github.com/varonusmaximus/axiompy-agents"
 Documentation = "https://github.com/varonusmaximus/axiompy-agents#readme"
 
 [project.optional-dependencies]
-# HTTP already in core extras above; optional heavier stacks for RAG / providers
-rag = [
+kernel = []
+memory-redis = ["redis>=5.0"]
+io-rag = [
     "numpy>=1.24.0,<2.0",
     "chromadb>=0.4.0",
     "fastembed>=0.3.0",
@@ -46,6 +47,8 @@ rag = [
 ]
 openai = ["openai>=1.0.0"]
 anthropic = ["anthropic>=0.18.0"]
+kernel-langgraph = ["langgraph>=0.2.0"]
+kernel-langchain = ["langchain-core>=0.3.0"]
 test-all = [
     "numpy>=1.24.0,<2.0",
     "chromadb>=0.4.0",
@@ -58,6 +61,15 @@ test-all = [
     "pytest-mock>=3.11.0",
     "moto>=4.0.0",
     "psycopg2-binary>=2.9.0",
+]
+# Backward-compatible alias
+rag = [
+    "numpy>=1.24.0,<2.0",
+    "chromadb>=0.4.0",
+    "fastembed>=0.3.0",
+    "sentence-transformers>=2.2.0",
+    "transformers<4.50",
+    "pypdf>=4.0.0",
 ]
 
 [tool.pytest.ini_options]

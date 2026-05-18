@@ -6,8 +6,8 @@ to understand dataset capabilities, structure, and constraints.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Optional
 
 
 @dataclass

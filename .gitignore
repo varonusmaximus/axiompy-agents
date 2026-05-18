@@ -9,6 +9,7 @@ htmlcov/
 .coverage
 coverage.xml
 venv/
+.venv/
 .env/
 *.env
 env/

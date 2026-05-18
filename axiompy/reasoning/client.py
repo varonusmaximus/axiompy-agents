@@ -335,7 +335,7 @@ class AIClient:
         # Look for SQL by finding keywords
         lines = text.split("\n")
         sql_start_idx = -1
-        sql_end_idx = len(lines)
+        _sql_end_idx = len(lines)  # reserved for multi-line SQL boundary detection
 
         # Find where SQL starts
         for i, line in enumerate(lines):

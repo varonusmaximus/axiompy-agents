@@ -1,7 +1,5 @@
 """Tests for reasoning metadata module"""
 
-import pytest
-
 from axiompy.reasoning.metadata import (
     DatasetMetadata,
     ExampleMetadata,

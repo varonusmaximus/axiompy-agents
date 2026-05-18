@@ -247,20 +247,34 @@ class TestReasoningFactory:
 
     def test_create_ollama_custom_model(self):
         """Test creating Ollama with custom model"""
-        client = ReasoningFactory.create(ReasoningProvider.OLLAMA, model="llama2")
+        from axiompy.reasoning.settings import ReasoningSettings
+
+        client = ReasoningFactory.create(
+            ReasoningProvider.OLLAMA,
+            settings=ReasoningSettings(model="llama2"),
+        )
         assert client.model == "llama2"
 
     def test_create_openai(self):
         """Test creating OpenAI client"""
-        client = ReasoningFactory.create(ReasoningProvider.OPENAI, api_key="sk-test")
+        from axiompy.reasoning.settings import ReasoningSettings
+
+        client = ReasoningFactory.create(
+            ReasoningProvider.OPENAI,
+            settings=ReasoningSettings(api_key="sk-test"),
+        )
         assert client.provider == OpenAIProviderConfig
         assert client.api_key == "sk-test"
 
     def test_create_anthropic(self):
         """Test creating Anthropic client"""
         from axiompy.reasoning.providers.anthropic import AnthropicProviderConfig
+        from axiompy.reasoning.settings import ReasoningSettings
 
-        client = ReasoningFactory.create(ReasoningProvider.ANTHROPIC, api_key="sk-ant-test")
+        client = ReasoningFactory.create(
+            ReasoningProvider.ANTHROPIC,
+            settings=ReasoningSettings(api_key="sk-ant-test"),
+        )
         assert client.provider == AnthropicProviderConfig
 
     def test_create_invalid_provider(self):

@@ -31,7 +31,10 @@ Architecture:
 from axiompy.reasoning.agents.query import QueryAgent
 from axiompy.reasoning.base import BaseDatasetService
 from axiompy.reasoning.client import AIClient
+from axiompy.reasoning.adapter import ReasoningLLMAdapter
+from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
 from axiompy.reasoning.factory import ReasoningFactory
+from axiompy.reasoning.settings import ReasoningSettings
 from axiompy.reasoning.metadata import (
     DatasetMetadata,
     ExampleMetadata,
@@ -44,6 +47,9 @@ __all__ = [
     "BaseDatasetService",
     "AIClient",
     "ReasoningFactory",
+    "ReasoningSettings",
+    "ReasoningLLMAdapter",
+    "ReasoningAdapter",
     "ReasoningProvider",
     "DatasetMetadata",
     "ScopeMetadata",

@@ -29,7 +29,7 @@ from axiompy.io.http import HTTPClientFactory, RetryConfig
 from axiompy.validators import ensure_not_empty, ensure_url
 
 # Bad
-from axiompy.io import *
+from axiompy.agents.io import *
 import axiompy.io.http as http
 ```
 
