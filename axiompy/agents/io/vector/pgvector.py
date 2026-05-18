@@ -31,8 +31,9 @@ import contextlib
 import json
 from typing import Any, Dict, List, Optional
 
-from axiompy.agents.io.types import DocumentChunk, SearchResult
 from axiompy.agents.io.errors import RAGVectorStoreError
+from axiompy.agents.io.sql_identifiers import validate_sql_identifier
+from axiompy.agents.io.types import DocumentChunk, SearchResult
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -85,7 +86,7 @@ class PGVectorStore:
             ) from e
 
         self._database_url = database_url
-        self._table_name = table_name
+        self._table_name = validate_sql_identifier(table_name, "table_name")
         self._embedding_dim = embedding_dimension
 
         # Store module reference
@@ -113,7 +114,7 @@ class PGVectorStore:
             cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
 
             # Create table
-            cur.execute(f"""
+            cur.execute(f"""  # nosec B608
                 CREATE TABLE IF NOT EXISTS {self._table_name} (
                     id VARCHAR(255) PRIMARY KEY,
                     document_id VARCHAR(255) NOT NULL,
@@ -128,7 +129,7 @@ class PGVectorStore:
             """)
 
             # Create index for vector similarity search
-            cur.execute(f"""
+            cur.execute(f"""  # nosec B608
                 CREATE INDEX IF NOT EXISTS {self._table_name}_embedding_idx
                 ON {self._table_name}
                 USING ivfflat (embedding vector_cosine_ops)
@@ -136,7 +137,7 @@ class PGVectorStore:
             """)
 
             # Create index for document_id lookups
-            cur.execute(f"""
+            cur.execute(f"""  # nosec B608
                 CREATE INDEX IF NOT EXISTS {self._table_name}_document_id_idx
                 ON {self._table_name} (document_id)
             """)
@@ -190,7 +191,7 @@ class PGVectorStore:
                 self._execute_values(
                     cur,
                     f"""
-                    INSERT INTO {self._table_name}
+                    INSERT INTO {self._table_name}  # nosec B608
                     (id, document_id, content, chunk_index, start_char, end_char,
                      embedding, metadata)
                     VALUES %s
@@ -259,7 +260,7 @@ class PGVectorStore:
                 embedding::text,
                 metadata,
                 1 - (embedding <=> %s::vector) as score
-            FROM {self._table_name}
+            FROM {self._table_name}  # nosec B608
             {where_sql}
             ORDER BY embedding <=> %s::vector
             LIMIT {top_k}
@@ -317,7 +318,7 @@ class PGVectorStore:
         try:
             with self._conn.cursor() as cur:
                 cur.execute(
-                    f"DELETE FROM {self._table_name} WHERE document_id = %s",
+                    f"DELETE FROM {self._table_name} WHERE document_id = %s",  # nosec B608
                     (document_id,),
                 )
                 deleted = cur.rowcount
@@ -332,7 +333,7 @@ class PGVectorStore:
         """Clear all chunks from the store."""
         try:
             with self._conn.cursor() as cur:
-                cur.execute(f"TRUNCATE TABLE {self._table_name}")
+                cur.execute(f"TRUNCATE TABLE {self._table_name}")  # nosec B608
 
             logger.info("Cleared all chunks from pgvector store")
 
@@ -344,7 +345,7 @@ class PGVectorStore:
         """Get total number of chunks in the store."""
         try:
             with self._conn.cursor() as cur:
-                cur.execute(f"SELECT COUNT(*) FROM {self._table_name}")
+                cur.execute(f"SELECT COUNT(*) FROM {self._table_name}")  # nosec B608
                 result = cur.fetchone()
                 return result[0] if result else 0
 

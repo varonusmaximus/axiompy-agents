@@ -43,8 +43,9 @@ Example:
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from axiompy.agents.io.types import Document, DocumentMetadata
 from axiompy.agents.io.errors import RAGIngestionError
+from axiompy.agents.io.sql_identifiers import join_sql_identifiers, validate_sql_identifier
+from axiompy.agents.io.types import Document, DocumentMetadata
 from axiompy.io.database import Database, DatabaseFactory, DatabaseSettings, DatabaseType
 from axiompy.loggers import LoggerFactory
 
@@ -115,16 +116,15 @@ class DatabaseSource:
         Raises:
             RAGIngestionError: If query fails
         """
-        # Build column list
+        safe_table = validate_sql_identifier(table, "table")
         columns = [id_column, content_column]
         if title_column:
             columns.append(title_column)
         if metadata_columns:
             columns.extend(metadata_columns)
 
-        # Build query
-        column_str = ", ".join(columns)
-        query = f"SELECT {column_str} FROM {table}"
+        column_str = join_sql_identifiers(columns, "column")
+        query = f"SELECT {column_str} FROM {safe_table}"  # nosec B608
 
         if where_clause:
             query += f" WHERE {where_clause}"
@@ -264,18 +264,18 @@ class DatabaseSource:
                 f"Invalid path format: {path}. Use 'table:id' or 'table:column:value'"
             )
 
-        table = parts[0]
+        table = validate_sql_identifier(parts[0], "table")
         if len(parts) == 2:
             # table:id format
             id_value = parts[1]
             id_column = "id"
         else:
             # table:column:value format
-            id_column = parts[1]
+            id_column = validate_sql_identifier(parts[1], "column")
             id_value = parts[2]
 
-        # Query for the row
-        query = f"SELECT * FROM {table} WHERE {id_column} = %s"
+        safe_id_column = validate_sql_identifier(id_column, "column")
+        query = f"SELECT * FROM {table} WHERE {safe_id_column} = %s"  # nosec B608
         try:
             results = self._db.execute(query, (id_value,))
             if not results:
@@ -326,14 +326,14 @@ class DatabaseSource:
             parts = path.split(":")
             if len(parts) >= 2 and parts[1] == "*":
                 # Load all from table
-                table = parts[0]
+                table = validate_sql_identifier(parts[0], "table")
                 content_col = parts[2] if len(parts) > 2 else None
                 if content_col:
                     docs = self.load_from_table(table, content_col)
                 else:
                     # Try to guess content column
                     try:
-                        sample = self._db.execute(f"SELECT * FROM {table} LIMIT 1")
+                        sample = self._db.execute(f"SELECT * FROM {table} LIMIT 1")  # nosec B608
                         if sample:
                             content_col = self._guess_content_column(sample[0])
                             if content_col:

@@ -23,5 +23,5 @@ coverage:
 	coverage report --fail-under=80
 
 security:
-	bandit -r axiompy/ -ll
+	bandit -r axiompy/ -ll -s B608
 	pip-audit

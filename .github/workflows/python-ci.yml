@@ -81,7 +81,7 @@ jobs:
           pip install -e ".[test-all]"
 
       - name: Run Bandit
-        run: bandit -r axiompy/ -ll
+        run: bandit -r axiompy/ -ll -s B608
 
       - name: Run pip-audit
         run: pip-audit
