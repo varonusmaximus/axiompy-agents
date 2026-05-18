@@ -29,7 +29,7 @@ Extras: `kernel`, `io-rag` (alias `rag`), `memory-redis`, `openai`, `anthropic`,
 make lint && make test && make coverage && make security
 ```
 
-Workflow: `.github/workflows/python-ci.yml` (Ruff 3.11, pytest+coverage 3.12, Bandit, pip-audit).
+Workflow: `.github/workflows/python-ci.yml` (Ruff 3.11; pytest, coverage, Bandit, pip-audit on 3.12). Requires **Python 3.12+** (matches axiompy core).
 
 ## Namespace note
 

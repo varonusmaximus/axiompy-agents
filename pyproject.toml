@@ -13,7 +13,7 @@ keywords = ["agents", "kernel", "llm", "reasoning", "axiompy"]
 packages = [{ include = "axiompy" }]
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.12"
 # PyPI only has axiompy 0.2.x; use Git until 2.0 is published.
 axiompy = { git = "https://github.com/varonusmaximus/axiompy.git", branch = "main", extras = [
     "servers",
@@ -32,7 +32,7 @@ name = "axiompy-agents"
 version = "3.0.0"
 description = "Hexagonal agent kernel, IO primitives, and reasoning for AxiomPy"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Jorge Varona", email = "varonusmaximus@users.noreply.github.com" }]
 # PyPI only has axiompy 0.2.x; pin Git until 2.0 is published (then use >=2.0.0,<3.0.0).
