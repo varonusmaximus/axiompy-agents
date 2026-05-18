@@ -14,7 +14,14 @@ packages = [{ include = "axiompy" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10"
-axiompy = ">=2.0.0,<3.0.0"
+# PyPI only has axiompy 0.2.x; use Git until 2.0 is published.
+axiompy = { git = "https://github.com/varonusmaximus/axiompy.git", branch = "main", extras = [
+    "servers",
+    "http",
+    "http-async",
+    "databases",
+    "storage",
+] }
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.4.0"
@@ -28,7 +35,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Jorge Varona", email = "varonusmaximus@users.noreply.github.com" }]
-dependencies = ["axiompy[servers,http,http-async,databases,storage]>=2.0.0,<3.0.0"]
+# PyPI only has axiompy 0.2.x; pin Git until 2.0 is published (then use >=2.0.0,<3.0.0).
+dependencies = [
+    "axiompy[servers,http,http-async,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@main",
+]
 
 [project.urls]
 Repository = "https://github.com/varonusmaximus/axiompy-agents"
