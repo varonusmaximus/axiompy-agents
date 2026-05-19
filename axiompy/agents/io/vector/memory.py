@@ -27,7 +27,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from axiompy.agents.io.types import DocumentChunk, SearchResult
-from axiompy.agents.io.errors import RAGVectorStoreError
+from axiompy.agents.io.errors import AgentIOVectorStoreError
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -66,7 +66,7 @@ class InMemoryVectorStore:
             Number of chunks added
 
         Raises:
-            RAGVectorStoreError: If chunks missing embeddings or dimension mismatch
+            AgentIOVectorStoreError: If chunks missing embeddings or dimension mismatch
         """
         if not chunks:
             return 0
@@ -74,7 +74,7 @@ class InMemoryVectorStore:
         # Validate all chunks have embeddings
         for i, chunk in enumerate(chunks):
             if chunk.embedding is None:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Chunk {i} missing embedding. Embed chunks before adding."
                 )
 
@@ -85,7 +85,7 @@ class InMemoryVectorStore:
         if self._embeddings is not None:
             existing_dim = self._embeddings.shape[1]
             if new_dim != existing_dim:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Embedding dimension mismatch: store has {existing_dim}, got {new_dim}"
                 )
 

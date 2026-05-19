@@ -1,34 +1,21 @@
-"""Reasoning Adapter for LLM generation.
+"""LLM provider adapter for agents.io.
 
-Wraps axiompy.reasoning.AIClient to provide LLMProvider interface for RAG.
-
-Works with any provider supported by axiompy.reasoning:
-- Ollama (local)
-- OpenAI
-- Anthropic
+Wraps axiompy.reasoning.AIClient to implement the agents.io LLMProvider port.
 
 Example:
-    from axiompy.agents.rag.adapters.llm import ReasoningAdapter
     from axiompy.reasoning import ReasoningFactory, ReasoningProvider
+    from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
 
-    # Create AI client (local Ollama)
     ai_client = ReasoningFactory.create(
         ReasoningProvider.OLLAMA,
-        model="mistral",
+        settings=ReasoningSettings(model="mistral"),
     )
-
-    # Create RAG LLM adapter
     llm = ReasoningAdapter(ai_client)
-
-    # Use in RAG
-    response = llm.generate(
-        prompt="What is Python?",
-        context="Python is a programming language...",
-    )
+    answer = llm.generate("What is Python?", context="Python is a programming language...")
 """
 
-from axiompy.agents.io.defaults import DEFAULT_RAG_PROMPT
-from axiompy.agents.io.errors import RAGLLMError
+from axiompy.agents.io.defaults import DEFAULT_RETRIEVAL_PROMPT
+from axiompy.agents.io.errors import AgentIOLLMError
 from axiompy.loggers import LoggerFactory
 from axiompy.reasoning import AIClient
 
@@ -39,24 +26,14 @@ class ReasoningAdapter:
     """
     LLMProvider adapter wrapping axiompy.reasoning.AIClient.
 
-    Formats RAG prompts (question + context) and delegates generation
+    Formats retrieval prompts (question + context) and delegates generation
     to the underlying AIClient.
-
-    Attributes:
-        model_name: Name of the model being used
-
-    Example:
-        from axiompy.reasoning import ReasoningFactory, ReasoningProvider
-
-        ai = ReasoningFactory.create(ReasoningProvider.OLLAMA, model="mistral")
-        llm = ReasoningAdapter(ai)
-        response = llm.generate("What is X?", context="X is...")
     """
 
     def __init__(
         self,
         ai_client: AIClient,
-        prompt_template: str = DEFAULT_RAG_PROMPT,
+        prompt_template: str = DEFAULT_RETRIEVAL_PROMPT,
     ) -> None:
         """
         Initialize adapter with an AIClient.
@@ -64,10 +41,6 @@ class ReasoningAdapter:
         Args:
             ai_client: Configured axiompy.reasoning.AIClient
             prompt_template: Template with {context} and {question} placeholders
-
-        Example:
-            ai = ReasoningFactory.create(ReasoningProvider.OLLAMA)
-            llm = ReasoningAdapter(ai)
         """
         self._client = ai_client
         self._prompt_template = prompt_template
@@ -94,9 +67,8 @@ class ReasoningAdapter:
             Generated response text
 
         Raises:
-            RAGLLMError: If generation fails
+            AgentIOLLMError: If generation fails
         """
-        # Format the full prompt with context
         full_prompt = self._prompt_template.format(
             context=context,
             question=prompt,
@@ -104,20 +76,19 @@ class ReasoningAdapter:
 
         try:
             logger.debug(f"Generating response: temp={temperature}, max_tokens={max_tokens}")
-
             response = self._client.generate_completion(
                 prompt=full_prompt,
                 temperature=temperature,
                 max_tokens=max_tokens,
-                use_cache=False,  # RAG responses should not be cached
+                use_cache=False,
             )
-
             logger.debug(f"Generated {len(response)} chars")
             return response
-
+        except AgentIOLLMError:
+            raise
         except Exception as e:
             logger.error(f"LLM generation failed: {e}")
-            raise RAGLLMError(f"Generation failed: {e}") from e
+            raise AgentIOLLMError(f"Generation failed: {e}") from e
 
     @property
     def model_name(self) -> str:

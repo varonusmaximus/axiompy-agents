@@ -31,7 +31,7 @@ Requirements:
 
 from typing import List
 
-from axiompy.agents.io.errors import RAGEmbeddingError
+from axiompy.agents.io.errors import AgentIOEmbeddingError
 from axiompy.io.http import HTTPClientFactory
 from axiompy.loggers import LoggerFactory
 
@@ -80,7 +80,7 @@ class OllamaEmbedder:
             timeout_secs: Request timeout in seconds
 
         Raises:
-            RAGEmbeddingError: If cannot connect to Ollama
+            AgentIOEmbeddingError: If cannot connect to Ollama
         """
         self._model = model
         self._host = host.rstrip("/")
@@ -124,10 +124,10 @@ class OllamaEmbedder:
             Embedding vector
 
         Raises:
-            RAGEmbeddingError: If API call fails
+            AgentIOEmbeddingError: If API call fails
         """
         if not text or not text.strip():
-            raise RAGEmbeddingError("Cannot embed empty text")
+            raise AgentIOEmbeddingError("Cannot embed empty text")
 
         try:
             response = self._client.post(
@@ -141,10 +141,10 @@ class OllamaEmbedder:
             if response.status_code != 200:
                 error_msg = response.text
                 if response.status_code == 404:
-                    raise RAGEmbeddingError(
+                    raise AgentIOEmbeddingError(
                         f"Model '{self._model}' not found. Run: ollama pull {self._model}"
                     )
-                raise RAGEmbeddingError(f"Ollama API error ({response.status_code}): {error_msg}")
+                raise AgentIOEmbeddingError(f"Ollama API error ({response.status_code}): {error_msg}")
 
             data = response.json()
             embedding = data.get("embedding", [])
@@ -156,16 +156,16 @@ class OllamaEmbedder:
 
             return embedding
 
-        except RAGEmbeddingError:
+        except AgentIOEmbeddingError:
             raise
         except Exception as e:
             # Check for connection errors
             if "Connection" in str(e) or "refused" in str(e).lower():
-                raise RAGEmbeddingError(
+                raise AgentIOEmbeddingError(
                     f"Cannot connect to Ollama at {self._host}. "
                     "Ensure Ollama is running: ollama serve"
                 ) from e
-            raise RAGEmbeddingError(f"Ollama embedding failed: {e}") from e
+            raise AgentIOEmbeddingError(f"Ollama embedding failed: {e}") from e
 
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
         """
@@ -181,7 +181,7 @@ class OllamaEmbedder:
             List of embedding vectors
 
         Raises:
-            RAGEmbeddingError: If API call fails
+            AgentIOEmbeddingError: If API call fails
         """
         if not texts:
             return []
@@ -189,7 +189,7 @@ class OllamaEmbedder:
         # Filter and validate texts
         valid_texts = [t for t in texts if t and t.strip()]
         if not valid_texts:
-            raise RAGEmbeddingError("No valid texts to embed")
+            raise AgentIOEmbeddingError("No valid texts to embed")
 
         # Embed each text (Ollama doesn't support batch)
         embeddings = []

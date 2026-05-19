@@ -37,7 +37,7 @@ Requires:
 from typing import Any, Dict, List, Optional
 
 from axiompy.agents.io.types import DocumentChunk, SearchResult
-from axiompy.agents.io.errors import RAGVectorStoreError
+from axiompy.agents.io.errors import AgentIOVectorStoreError
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -75,13 +75,13 @@ class ChromaVectorStore:
             collection_name: Name of the collection to use
 
         Raises:
-            RAGVectorStoreError: If ChromaDB is not installed
+            AgentIOVectorStoreError: If ChromaDB is not installed
         """
         try:
             import chromadb
             from chromadb.config import Settings
         except ImportError as e:
-            raise RAGVectorStoreError(
+            raise AgentIOVectorStoreError(
                 "ChromaDB not installed. Install with: pip install chromadb"
             ) from e
 
@@ -123,7 +123,7 @@ class ChromaVectorStore:
             Number of chunks added
 
         Raises:
-            RAGVectorStoreError: If chunks missing embeddings
+            AgentIOVectorStoreError: If chunks missing embeddings
         """
         if not chunks:
             return 0
@@ -136,7 +136,7 @@ class ChromaVectorStore:
 
         for i, chunk in enumerate(chunks):
             if chunk.embedding is None:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Chunk {i} missing embedding. Embed chunks before adding."
                 )
 

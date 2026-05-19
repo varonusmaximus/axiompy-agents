@@ -5,13 +5,13 @@ Embeddings, vector stores, and document loading/chunking — compose with axiomp
 
 from axiompy.agents.io.embeddings import EmbedderFactory
 from axiompy.agents.io.errors import (
-    RAGConfigurationError,
-    RAGEmbeddingError,
-    RAGError,
-    RAGIngestionError,
-    RAGLLMError,
-    RAGQueryError,
-    RAGVectorStoreError,
+    AgentIOConfigurationError,
+    AgentIOEmbeddingError,
+    AgentIOError,
+    AgentIOIngestionError,
+    AgentIOLLMError,
+    AgentIOQueryError,
+    AgentIOVectorStoreError,
 )
 from axiompy.agents.io.mocks import (
     MockDocumentSource,
@@ -41,7 +41,7 @@ from axiompy.agents.io.types import (
     DocumentChunk,
     DocumentMetadata,
     Query,
-    RAGResponse,
+    RetrievalResponse,
     SearchResult,
 )
 from axiompy.agents.io.vector import VectorStoreFactory
@@ -51,7 +51,7 @@ __all__ = [
     "DocumentChunk",
     "DocumentMetadata",
     "Query",
-    "RAGResponse",
+    "RetrievalResponse",
     "SearchResult",
     "DocumentChunker",
     "DocumentSource",
@@ -72,11 +72,11 @@ __all__ = [
     "MockEmbedder",
     "MockLLMProvider",
     "MockVectorStore",
-    "RAGError",
-    "RAGConfigurationError",
-    "RAGIngestionError",
-    "RAGEmbeddingError",
-    "RAGVectorStoreError",
-    "RAGQueryError",
-    "RAGLLMError",
+    "AgentIOError",
+    "AgentIOConfigurationError",
+    "AgentIOIngestionError",
+    "AgentIOEmbeddingError",
+    "AgentIOVectorStoreError",
+    "AgentIOQueryError",
+    "AgentIOLLMError",
 ]

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "axiompy-agents"
-version = "3.0.0"
+version = "3.1.0"
 description = "Hexagonal agent kernel, IO primitives, and reasoning for AxiomPy"
 readme = "README.md"
 license = "MIT"
@@ -29,7 +29,7 @@ pytest-cov = ">=4.1.0"
 
 [project]
 name = "axiompy-agents"
-version = "3.0.0"
+version = "3.1.0"
 description = "Hexagonal agent kernel, IO primitives, and reasoning for AxiomPy"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -90,5 +90,5 @@ addopts = "-v --tb=short"
 source = ["axiompy"]
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py312"
 line-length = 100

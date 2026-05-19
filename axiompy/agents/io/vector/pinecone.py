@@ -32,7 +32,7 @@ Note:
 from typing import Any, Dict, List, Optional
 
 from axiompy.agents.io.types import DocumentChunk, SearchResult
-from axiompy.agents.io.errors import RAGVectorStoreError
+from axiompy.agents.io.errors import AgentIOVectorStoreError
 from axiompy.io.http import HTTPClientFactory
 from axiompy.loggers import LoggerFactory
 
@@ -74,12 +74,12 @@ class PineconeVectorStore:
             timeout_secs: Request timeout in seconds
 
         Raises:
-            RAGVectorStoreError: If API key or index name not provided
+            AgentIOVectorStoreError: If API key or index name not provided
         """
         if not api_key:
-            raise RAGVectorStoreError("Pinecone API key is required")
+            raise AgentIOVectorStoreError("Pinecone API key is required")
         if not index_name:
-            raise RAGVectorStoreError("Pinecone index name is required")
+            raise AgentIOVectorStoreError("Pinecone index name is required")
 
         self._api_key = api_key
         self._index_name = index_name
@@ -89,7 +89,7 @@ class PineconeVectorStore:
 
         # Host is required for direct API access
         if not host:
-            raise RAGVectorStoreError(
+            raise AgentIOVectorStoreError(
                 "Pinecone host URL is required. "
                 "Find it in Pinecone console: https://app.pinecone.io"
             )
@@ -116,7 +116,7 @@ class PineconeVectorStore:
             Number of chunks added
 
         Raises:
-            RAGVectorStoreError: If chunks missing embeddings or API error
+            AgentIOVectorStoreError: If chunks missing embeddings or API error
         """
         if not chunks:
             return 0
@@ -125,7 +125,7 @@ class PineconeVectorStore:
         vectors = []
         for i, chunk in enumerate(chunks):
             if chunk.embedding is None:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Chunk {i} missing embedding. Embed chunks before adding."
                 )
 
@@ -167,17 +167,17 @@ class PineconeVectorStore:
                 )
 
                 if response.status_code != 200:
-                    raise RAGVectorStoreError(
+                    raise AgentIOVectorStoreError(
                         f"Pinecone upsert failed ({response.status_code}): {response.text}"
                     )
 
                 data = response.json()
                 total_added += data.get("upsertedCount", len(batch))
 
-            except RAGVectorStoreError:
+            except AgentIOVectorStoreError:
                 raise
             except Exception as e:
-                raise RAGVectorStoreError(f"Pinecone upsert failed: {e}") from e
+                raise AgentIOVectorStoreError(f"Pinecone upsert failed: {e}") from e
 
         self._chunk_count += total_added
         logger.debug(f"Added {total_added} chunks to Pinecone")
@@ -220,7 +220,7 @@ class PineconeVectorStore:
             )
 
             if response.status_code != 200:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Pinecone query failed ({response.status_code}): {response.text}"
                 )
 
@@ -256,10 +256,10 @@ class PineconeVectorStore:
 
             return results
 
-        except RAGVectorStoreError:
+        except AgentIOVectorStoreError:
             raise
         except Exception as e:
-            raise RAGVectorStoreError(f"Pinecone search failed: {e}") from e
+            raise AgentIOVectorStoreError(f"Pinecone search failed: {e}") from e
 
     def delete_document(self, document_id: str) -> int:
         """
@@ -282,7 +282,7 @@ class PineconeVectorStore:
             )
 
             if response.status_code != 200:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Pinecone delete failed ({response.status_code}): {response.text}"
                 )
 
@@ -290,10 +290,10 @@ class PineconeVectorStore:
             # Pinecone doesn't return count, estimate based on cached count
             return 1  # Return non-zero to indicate success
 
-        except RAGVectorStoreError:
+        except AgentIOVectorStoreError:
             raise
         except Exception as e:
-            raise RAGVectorStoreError(f"Pinecone delete failed: {e}") from e
+            raise AgentIOVectorStoreError(f"Pinecone delete failed: {e}") from e
 
     @property
     def chunk_count(self) -> int:

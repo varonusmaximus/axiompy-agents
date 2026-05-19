@@ -45,7 +45,7 @@ class QueryAgent:
     Example:
         # Setup
         agent = QueryAgent(
-            ai_client=AIClientFactory.create_ollama(),
+            ai_client=ReasoningFactory.create(ReasoningProvider.OLLAMA),
             datasets={
                 "crime": crime_service,
                 "housing": housing_service

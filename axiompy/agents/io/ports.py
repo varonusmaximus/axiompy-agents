@@ -1,26 +1,12 @@
-"""RAG Port Definitions (Interfaces).
+"""agents.io port definitions (Protocols).
 
-Protocol-based interfaces for dependency injection following axiompy patterns.
+Protocol-based interfaces for dependency injection. Compose with axiompy.kernel:
 
-Ports define the contracts that adapters must implement:
-- DocumentSource: How we load documents
-- Embedder: How we generate embeddings
-- VectorStore: How we store and search embeddings
-- LLMProvider: How we generate responses
-- DocumentChunker: How we split documents into chunks
-
-Example:
-    # Ports are implemented by adapters
-    class OpenAIEmbedder:
-        def embed_text(self, text: str) -> List[float]:
-            # OpenAI-specific implementation
-            ...
-
-    # RAGService depends on ports, not concrete implementations
-    service = RAGService(
-        embedder=OpenAIEmbedder(...),  # Any Embedder implementation
-        ...
-    )
+- DocumentSource: load documents
+- Embedder: generate embeddings
+- VectorStore: store and search vectors
+- LLMProvider: generate answers from context
+- DocumentChunker: split documents into chunks
 """
 
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable

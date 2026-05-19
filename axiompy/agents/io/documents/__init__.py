@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, Set
 # Always available
 from axiompy.agents.io.documents.filesystem import FileSystemSource
 from axiompy.agents.io.ports import DocumentSource
-from axiompy.agents.io.errors import RAGConfigurationError
+from axiompy.agents.io.errors import AgentIOConfigurationError
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -138,7 +138,7 @@ class SourceFactory:
             Configured DocumentSource instance
 
         Raises:
-            RAGConfigurationError: If configuration is invalid
+            AgentIOConfigurationError: If configuration is invalid
 
         Note:
             For S3 and Database sources, use create_s3() or create_database()
@@ -172,13 +172,13 @@ class SourceFactory:
                 )
 
             case SourceType.OBJECT_STORE:
-                raise RAGConfigurationError(
+                raise AgentIOConfigurationError(
                     "ObjectStoreSource requires StorageSettings. "
                     "Use SourceFactory.create_object_store() instead."
                 )
 
             case SourceType.DATABASE:
-                raise RAGConfigurationError(
+                raise AgentIOConfigurationError(
                     "DatabaseSource requires DatabaseSettings. "
                     "Use SourceFactory.create_database() instead."
                 )
@@ -189,7 +189,7 @@ class SourceFactory:
                 return MockDocumentSource()
 
             case _:
-                raise RAGConfigurationError(f"Unknown source type: {source_type}")
+                raise AgentIOConfigurationError(f"Unknown source type: {source_type}")
 
     @staticmethod
     def create_object_store(

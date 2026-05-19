@@ -5,6 +5,11 @@ from __future__ import annotations
 from axiompy.kernel.domain.models import AgentResult, AgentRunConfig
 from axiompy.kernel.domain.ports import AgentRuntime
 from axiompy.kernel.settings import KernelSettings
+from axiompy.loggers import LoggerFactory
+
+logger = LoggerFactory.create_logger(__name__)
+
+_FALLBACK_WARNED = False
 
 
 class LangChainRuntime(AgentRuntime):
@@ -21,6 +26,12 @@ class LangChainRuntime(AgentRuntime):
             ) from exc
 
     def run(self, goal: str, config: AgentRunConfig) -> AgentResult:
+        global _FALLBACK_WARNED
+        if not _FALLBACK_WARNED:
+            logger.warning(
+                "LangChainRuntime is not fully wired; using NativeAgentRuntime (MVP fallback)"
+            )
+            _FALLBACK_WARNED = True
         from axiompy.kernel.runtime.native import NativeAgentRuntime
 
         native = NativeAgentRuntime(

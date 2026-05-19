@@ -1,16 +1,12 @@
-"""Mock Adapters for Testing.
+"""Mock adapters for agents.io testing.
 
-Provides mock implementations of all RAG ports for unit testing.
-Following axiompy patterns with calls tracking and set_response methods.
+Provides mock implementations of io ports with call tracking and set_response helpers.
 
 Example:
-    # Create mock service for testing
-    rag = RAGServiceFactory.create_mock()
-    rag.embedder.set_dimension(384)
-    rag.llm_provider.set_response("Mocked answer")
-
-    response = rag.query("test question")
-    assert response.answer == "Mocked answer"
+    embedder = EmbedderFactory.create_mock(dimension=384)
+    store = VectorStoreFactory.create_mock()
+    llm = MockLLMProvider()
+    llm.set_response("Mocked answer")
 """
 
 from typing import Any, Dict, List, Optional, Tuple

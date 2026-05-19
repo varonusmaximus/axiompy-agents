@@ -1,56 +1,56 @@
-"""RAG Error Hierarchy.
+"""Agent IO error hierarchy.
 
-Defines exception hierarchy for RAG operations following axiompy patterns.
+Defines exception hierarchy for agents.io operations following axiompy patterns.
 
 Example:
     try:
-        response = rag.query("What is X?")
-    except RAGEmbeddingError as e:
+        embedder.embed(["text"])
+    except AgentIOEmbeddingError as e:
         logger.error(f"Embedding failed: {e}")
-    except RAGVectorStoreError as e:
+    except AgentIOVectorStoreError as e:
         logger.error(f"Vector store error: {e}")
-    except RAGError as e:
-        logger.error(f"RAG error: {e}")
+    except AgentIOError as e:
+        logger.error(f"IO error: {e}")
 """
 
 
-class RAGError(Exception):
-    """Base exception for all RAG errors."""
+class AgentIOError(Exception):
+    """Base exception for all agents.io errors."""
 
     pass
 
 
-class RAGConfigurationError(RAGError):
+class AgentIOConfigurationError(AgentIOError):
     """Invalid configuration or settings."""
 
     pass
 
 
-class RAGIngestionError(RAGError):
+class AgentIOIngestionError(AgentIOError):
     """Error during document ingestion."""
 
     pass
 
 
-class RAGEmbeddingError(RAGError):
+class AgentIOEmbeddingError(AgentIOError):
     """Error generating embeddings."""
 
     pass
 
 
-class RAGVectorStoreError(RAGError):
+class AgentIOVectorStoreError(AgentIOError):
     """Error interacting with vector store."""
 
     pass
 
 
-class RAGQueryError(RAGError):
+class AgentIOQueryError(AgentIOError):
     """Error during query execution."""
 
     pass
 
 
-class RAGLLMError(RAGError):
+class AgentIOLLMError(AgentIOError):
     """Error during LLM generation."""
 
     pass

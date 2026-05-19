@@ -25,7 +25,7 @@ Example:
 
 from typing import List, Optional
 
-from axiompy.agents.io.errors import RAGEmbeddingError
+from axiompy.agents.io.errors import AgentIOEmbeddingError
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -76,7 +76,7 @@ class FastEmbedEmbedder:
             local_files_only: If True, only use local cached models (no network)
 
         Raises:
-            RAGEmbeddingError: If fastembed not installed or model fails
+            AgentIOEmbeddingError: If fastembed not installed or model fails
         """
         self._model_name = model_name
         self._cache_dir = cache_dir
@@ -106,11 +106,11 @@ class FastEmbedEmbedder:
             logger.info(f"Loaded model {model_name}: dimension={self._dimension}")
 
         except ImportError as e:
-            raise RAGEmbeddingError(
+            raise AgentIOEmbeddingError(
                 "fastembed not installed. Install with: pip install fastembed"
             ) from e
         except Exception as e:
-            raise RAGEmbeddingError(f"Failed to load model '{model_name}': {e}") from e
+            raise AgentIOEmbeddingError(f"Failed to load model '{model_name}': {e}") from e
 
     def embed_text(self, text: str) -> List[float]:
         """
@@ -135,7 +135,7 @@ class FastEmbedEmbedder:
             List of embedding vectors
 
         Raises:
-            RAGEmbeddingError: If embedding fails
+            AgentIOEmbeddingError: If embedding fails
         """
         if not texts:
             return []
@@ -148,7 +148,7 @@ class FastEmbedEmbedder:
             return [emb.tolist() for emb in embeddings]
 
         except Exception as e:
-            raise RAGEmbeddingError(f"Embedding failed: {e}") from e
+            raise AgentIOEmbeddingError(f"Embedding failed: {e}") from e
 
     @property
     def embedding_dimension(self) -> int:

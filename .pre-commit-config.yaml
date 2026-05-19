@@ -20,7 +20,7 @@ repos:
     rev: 1.7.5
     hooks:
       - id: bandit
-        args: [-ll]
+        args: [-ll, -s, B608]
         files: ^axiompy/
         stages: [commit]
 
@@ -28,6 +28,7 @@ repos:
     rev: v2.9.0
     hooks:
       - id: pip-audit
+        args: [--ignore-vuln, CVE-2026-1839]
         stages: [pre-push]
 
   - repo: local

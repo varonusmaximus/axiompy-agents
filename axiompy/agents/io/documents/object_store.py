@@ -30,7 +30,7 @@ Example:
 from typing import List, Optional, Set
 
 from axiompy.agents.io.types import Document, DocumentMetadata
-from axiompy.agents.io.errors import RAGIngestionError
+from axiompy.agents.io.errors import AgentIOIngestionError
 from axiompy.io.object import ObjectStorageFactory, StorageSettings, StorageType
 from axiompy.loggers import LoggerFactory
 
@@ -113,7 +113,7 @@ class ObjectStoreSource:
             Document with content and metadata
 
         Raises:
-            RAGIngestionError: If load fails
+            AgentIOIngestionError: If load fails
         """
         try:
             # Get object content
@@ -156,7 +156,7 @@ class ObjectStoreSource:
             return Document(id=doc_id, content=content, metadata=metadata)
 
         except Exception as e:
-            raise RAGIngestionError(f"Failed to load object {key}: {e}") from e
+            raise AgentIOIngestionError(f"Failed to load object {key}: {e}") from e
 
     def load_documents(self, prefixes: List[str]) -> List[Document]:
         """
@@ -201,7 +201,7 @@ class ObjectStoreSource:
                     try:
                         doc = self.load_document(key)
                         documents.append(doc)
-                    except RAGIngestionError as e:
+                    except AgentIOIngestionError as e:
                         logger.warning(f"Skipping object {key}: {e}")
                         continue
 

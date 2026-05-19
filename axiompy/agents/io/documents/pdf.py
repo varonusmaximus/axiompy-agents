@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import List
 
 from axiompy.agents.io.types import Document, DocumentMetadata
-from axiompy.agents.io.errors import RAGIngestionError
+from axiompy.agents.io.errors import AgentIOIngestionError
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -72,10 +72,10 @@ class PDFSource:
             include_metadata: If True, extract PDF metadata (title, author, etc.)
 
         Raises:
-            RAGIngestionError: If pypdf is not installed
+            AgentIOIngestionError: If pypdf is not installed
         """
         if not PYPDF_AVAILABLE:
-            raise RAGIngestionError(
+            raise AgentIOIngestionError(
                 "pypdf is required for PDFSource. Install with: pip install pypdf"
             )
 
@@ -95,15 +95,15 @@ class PDFSource:
             Document with extracted text and metadata
 
         Raises:
-            RAGIngestionError: If file not found or extraction fails
+            AgentIOIngestionError: If file not found or extraction fails
         """
         file_path = Path(path).resolve()
 
         if not file_path.exists():
-            raise RAGIngestionError(f"PDF file not found: {path}")
+            raise AgentIOIngestionError(f"PDF file not found: {path}")
 
         if file_path.suffix.lower() != ".pdf":
-            raise RAGIngestionError(f"Not a PDF file: {path}")
+            raise AgentIOIngestionError(f"Not a PDF file: {path}")
 
         try:
             reader = PdfReader(str(file_path))
@@ -164,10 +164,10 @@ class PDFSource:
 
             return Document(id=doc_id, content=content, metadata=metadata)
 
-        except RAGIngestionError:
+        except AgentIOIngestionError:
             raise
         except Exception as e:
-            raise RAGIngestionError(f"Failed to load PDF {path}: {e}") from e
+            raise AgentIOIngestionError(f"Failed to load PDF {path}: {e}") from e
 
     def load_document_pages(self, path: str) -> List[Document]:
         """
@@ -180,12 +180,12 @@ class PDFSource:
             List of Document objects, one per page
 
         Raises:
-            RAGIngestionError: If file not found or extraction fails
+            AgentIOIngestionError: If file not found or extraction fails
         """
         file_path = Path(path).resolve()
 
         if not file_path.exists():
-            raise RAGIngestionError(f"PDF file not found: {path}")
+            raise AgentIOIngestionError(f"PDF file not found: {path}")
 
         try:
             reader = PdfReader(str(file_path))
@@ -219,10 +219,10 @@ class PDFSource:
             logger.debug(f"Loaded {len(documents)} pages from PDF: {path}")
             return documents
 
-        except RAGIngestionError:
+        except AgentIOIngestionError:
             raise
         except Exception as e:
-            raise RAGIngestionError(f"Failed to load PDF pages {path}: {e}") from e
+            raise AgentIOIngestionError(f"Failed to load PDF pages {path}: {e}") from e
 
     def load_documents(self, paths: List[str]) -> List[Document]:
         """
@@ -266,7 +266,7 @@ class PDFSource:
                 else:
                     doc = self.load_document(pdf_file)
                     documents.append(doc)
-            except RAGIngestionError as e:
+            except AgentIOIngestionError as e:
                 logger.warning(f"Skipping PDF {pdf_file}: {e}")
                 continue
 
