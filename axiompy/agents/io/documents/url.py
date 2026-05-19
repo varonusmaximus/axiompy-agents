@@ -29,7 +29,7 @@ from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 from axiompy.agents.io.types import Document, DocumentMetadata
-from axiompy.agents.io.errors import RAGIngestionError
+from axiompy.agents.io.errors import AgentIOIngestionError
 from axiompy.io.http import HTTPClientFactory
 from axiompy.loggers import LoggerFactory
 
@@ -122,13 +122,13 @@ class URLSource:
             Document with content and metadata
 
         Raises:
-            RAGIngestionError: If fetch fails
+            AgentIOIngestionError: If fetch fails
         """
         try:
             response = self._client.get(url)
 
             if response.status_code != 200:
-                raise RAGIngestionError(f"Failed to fetch {url}: HTTP {response.status_code}")
+                raise AgentIOIngestionError(f"Failed to fetch {url}: HTTP {response.status_code}")
 
             content_type = response.headers.get("content-type", "").lower()
             content = response.text
@@ -163,10 +163,10 @@ class URLSource:
 
             return Document(id=doc_id, content=content, metadata=metadata)
 
-        except RAGIngestionError:
+        except AgentIOIngestionError:
             raise
         except Exception as e:
-            raise RAGIngestionError(f"Failed to load URL {url}: {e}") from e
+            raise AgentIOIngestionError(f"Failed to load URL {url}: {e}") from e
 
     def load_documents(self, urls: List[str]) -> List[Document]:
         """
@@ -187,7 +187,7 @@ class URLSource:
             try:
                 doc = self.load_document(url)
                 documents.append(doc)
-            except RAGIngestionError as e:
+            except AgentIOIngestionError as e:
                 logger.warning(f"Skipping URL {url}: {e}")
                 continue
 

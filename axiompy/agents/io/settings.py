@@ -16,7 +16,7 @@ from axiompy.agents.io.defaults import (
     DEFAULT_TEMPERATURE,
 )
 from axiompy.agents.io.documents.chunker import FixedSizeChunker, ParagraphChunker, SentenceChunker
-from axiompy.validators import ensure_in_range, ensure_positive
+from axiompy.validators import ensure_in_range, ensure_not_empty, ensure_positive
 
 
 class EmbedderType(str, Enum):
@@ -72,6 +72,15 @@ class VectorStoreSettings:
     port: Optional[int] = None
     api_key: Optional[str] = None
     database_url: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        ensure_not_empty(self.collection_name, "collection_name must not be empty")
+        if self.port is not None:
+            ensure_positive(self.port, "port must be positive")
+        if self.database_url is not None:
+            ensure_not_empty(self.database_url, "database_url must not be empty")
+        if self.host is not None:
+            ensure_not_empty(self.host, "host must not be empty")
 
 
 @dataclass

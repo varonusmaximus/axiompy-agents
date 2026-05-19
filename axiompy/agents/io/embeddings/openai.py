@@ -27,7 +27,7 @@ Models:
 
 from typing import List, Optional
 
-from axiompy.agents.io.errors import RAGEmbeddingError
+from axiompy.agents.io.errors import AgentIOEmbeddingError
 from axiompy.io.http import HTTPClientFactory
 from axiompy.loggers import LoggerFactory
 
@@ -77,10 +77,10 @@ class OpenAIEmbedder:
             timeout_secs: Request timeout in seconds
 
         Raises:
-            RAGEmbeddingError: If API key is not provided
+            AgentIOEmbeddingError: If API key is not provided
         """
         if not api_key:
-            raise RAGEmbeddingError("OpenAI API key is required")
+            raise AgentIOEmbeddingError("OpenAI API key is required")
 
         self._api_key = api_key
         self._model = model
@@ -124,10 +124,10 @@ class OpenAIEmbedder:
             Embedding vector
 
         Raises:
-            RAGEmbeddingError: If API call fails
+            AgentIOEmbeddingError: If API call fails
         """
         if not text or not text.strip():
-            raise RAGEmbeddingError("Cannot embed empty text")
+            raise AgentIOEmbeddingError("Cannot embed empty text")
 
         embeddings = self.embed_texts([text])
         return embeddings[0]
@@ -143,7 +143,7 @@ class OpenAIEmbedder:
             List of embedding vectors
 
         Raises:
-            RAGEmbeddingError: If API call fails
+            AgentIOEmbeddingError: If API call fails
         """
         if not texts:
             return []
@@ -151,7 +151,7 @@ class OpenAIEmbedder:
         # Filter and validate texts
         valid_texts = [t.strip() for t in texts if t and t.strip()]
         if not valid_texts:
-            raise RAGEmbeddingError("No valid texts to embed")
+            raise AgentIOEmbeddingError("No valid texts to embed")
 
         try:
             response = self._client.post(
@@ -164,7 +164,9 @@ class OpenAIEmbedder:
 
             if response.status_code != 200:
                 error_msg = response.text
-                raise RAGEmbeddingError(f"OpenAI API error ({response.status_code}): {error_msg}")
+                raise AgentIOEmbeddingError(
+                    f"OpenAI API error ({response.status_code}): {error_msg}"
+                )
 
             data = response.json()
 
@@ -180,10 +182,10 @@ class OpenAIEmbedder:
 
             return embeddings
 
-        except RAGEmbeddingError:
+        except AgentIOEmbeddingError:
             raise
         except Exception as e:
-            raise RAGEmbeddingError(f"OpenAI embedding failed: {e}") from e
+            raise AgentIOEmbeddingError(f"OpenAI embedding failed: {e}") from e
 
     def __repr__(self) -> str:
         return f"OpenAIEmbedder(model={self._model}, dimension={self._dimension})"

@@ -1,5 +1,8 @@
 """Tests for axiompy.kernel."""
 
+import sys
+import types
+
 import pytest
 
 from axiompy.kernel import KernelFactory, KernelSettings, RuntimeType
@@ -74,6 +77,32 @@ class TestKernelFactory:
                 RuntimeType.LANGGRAPH,
                 KernelSettings(llm=MockLLMPort()),
             )
+
+    def test_framework_fallback_warn_flag_is_per_instance(self, monkeypatch) -> None:
+        """Each framework runtime tracks its own fallback warning state."""
+        fake_langgraph = types.ModuleType("langgraph")
+        fake_langchain = types.ModuleType("langchain_core")
+        monkeypatch.setitem(sys.modules, "langgraph", fake_langgraph)
+        monkeypatch.setitem(sys.modules, "langchain_core", fake_langchain)
+
+        from axiompy.kernel.adapters.frameworks.langchain_runtime import LangChainRuntime
+        from axiompy.kernel.adapters.frameworks.langgraph_runtime import LangGraphRuntime
+
+        settings = KernelSettings(llm=MockLLMPort())
+        graph_a = LangGraphRuntime(settings)
+        graph_b = LangGraphRuntime(settings)
+        chain_a = LangChainRuntime(settings)
+
+        assert graph_a._fallback_warned is False
+        assert graph_b._fallback_warned is False
+        assert chain_a._fallback_warned is False
+
+        config = AgentRunConfig(max_steps=1)
+        graph_a.run("goal", config)
+        assert graph_a._fallback_warned is True
+        assert graph_b._fallback_warned is False
+        graph_b.run("goal", config)
+        assert graph_b._fallback_warned is True
 
     def test_sequential_coordinator(self) -> None:
         from axiompy.kernel.adapters.coordinator.sequential import SequentialCoordinator

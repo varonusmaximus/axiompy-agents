@@ -1,7 +1,7 @@
-"""Unit tests for RAG module.
+"""Unit tests for axiompy.agents.io.
 
 Tests cover:
-- Domain models (Document, DocumentChunk, Query, SearchResult, RAGResponse)
+- Domain models (Document, DocumentChunk, Query, SearchResult, RetrievalResponse)
 - Chunking (FixedSizeChunker)
 - Adapters (InMemoryVectorStore, FileSystemSource)
 - Mocks
@@ -23,7 +23,7 @@ from axiompy.agents.io import (
     MockLLMProvider,
     MockVectorStore,
     Query,
-    RAGResponse,
+    RetrievalResponse,
     SearchResult,
     VectorStoreSettings,
 )
@@ -31,12 +31,12 @@ from axiompy.agents.io.documents.chunker import FixedSizeChunker
 from axiompy.agents.io.vector import InMemoryVectorStore
 from axiompy.agents.io.documents import FileSystemSource
 from axiompy.agents.io.errors import (
-    RAGConfigurationError,
-    RAGEmbeddingError,
-    RAGError,
-    RAGIngestionError,
-    RAGQueryError,
-    RAGVectorStoreError,
+    AgentIOConfigurationError,
+    AgentIOEmbeddingError,
+    AgentIOError,
+    AgentIOIngestionError,
+    AgentIOQueryError,
+    AgentIOVectorStoreError,
 )
 from axiompy.agents.io.defaults import (
     DEFAULT_CHUNK_SIZE,
@@ -44,7 +44,7 @@ from axiompy.agents.io.defaults import (
     DEFAULT_EMBEDDING_BATCH_SIZE,
     DEFAULT_MAX_TOKENS,
     DEFAULT_MIN_SCORE,
-    DEFAULT_RAG_PROMPT,
+    DEFAULT_RETRIEVAL_PROMPT,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_K,
 )
@@ -251,8 +251,8 @@ class TestSearchResult:
             SearchResult(chunk=chunk, score=1.5)
 
 
-class TestRAGResponse:
-    """Tests for RAGResponse model."""
+class TestRetrievalResponse:
+    """Tests for RetrievalResponse model."""
 
     def test_create_rag_response(self):
         """Test creating a RAG response."""
@@ -266,7 +266,7 @@ class TestRAGResponse:
             end_char=7,
         )
         sources = [SearchResult(chunk=chunk, score=0.9)]
-        response = RAGResponse(
+        response = RetrievalResponse(
             query=query,
             answer="Test answer",
             sources=sources,
@@ -281,7 +281,7 @@ class TestRAGResponse:
     def test_rag_response_no_sources(self):
         """Test RAG response with no sources."""
         query = Query(text="Test")
-        response = RAGResponse(
+        response = RetrievalResponse(
             query=query,
             answer="No info",
             sources=[],
@@ -309,8 +309,8 @@ class TestDefaults:
         assert 0 <= DEFAULT_MIN_SCORE <= 1
         assert 0 <= DEFAULT_TEMPERATURE <= 2
         assert DEFAULT_MAX_TOKENS > 0
-        assert "{context}" in DEFAULT_RAG_PROMPT
-        assert "{question}" in DEFAULT_RAG_PROMPT
+        assert "{context}" in DEFAULT_RETRIEVAL_PROMPT
+        assert "{question}" in DEFAULT_RETRIEVAL_PROMPT
 
 
 # =============================================================================
@@ -884,7 +884,7 @@ class TestOpenAIEmbedder:
         """Test missing API key raises error."""
         from axiompy.agents.io.embeddings.openai import OpenAIEmbedder
 
-        with pytest.raises(RAGEmbeddingError, match="API key is required"):
+        with pytest.raises(AgentIOEmbeddingError, match="API key is required"):
             OpenAIEmbedder(api_key="")
 
     def test_embed_text(self, mock_response, monkeypatch):
@@ -925,7 +925,7 @@ class TestOpenAIEmbedder:
 
         embedder = OpenAIEmbedder(api_key="sk-test")
 
-        with pytest.raises(RAGEmbeddingError, match="empty text"):
+        with pytest.raises(AgentIOEmbeddingError, match="empty text"):
             embedder.embed_text("")
 
     def test_embed_empty_list_returns_empty(self):
@@ -942,7 +942,7 @@ class TestOpenAIEmbedder:
 
         embedder = OpenAIEmbedder(api_key="sk-test")
 
-        with pytest.raises(RAGEmbeddingError, match="No valid texts"):
+        with pytest.raises(AgentIOEmbeddingError, match="No valid texts"):
             embedder.embed_texts(["   ", "\n\n", ""])
 
     def test_api_error_handling(self, mock_error_response, monkeypatch):
@@ -955,7 +955,7 @@ class TestOpenAIEmbedder:
         embedder = OpenAIEmbedder(api_key="sk-test")
         monkeypatch.setattr(embedder._client, "post", mock_post)
 
-        with pytest.raises(RAGEmbeddingError, match="OpenAI API error"):
+        with pytest.raises(AgentIOEmbeddingError, match="OpenAI API error"):
             embedder.embed_text("Hello")
 
     def test_repr(self):
@@ -1087,7 +1087,7 @@ class TestOllamaEmbedder:
 
         embedder = OllamaEmbedder()
 
-        with pytest.raises(RAGEmbeddingError, match="empty text"):
+        with pytest.raises(AgentIOEmbeddingError, match="empty text"):
             embedder.embed_text("")
 
     def test_embed_empty_list_returns_empty(self):
@@ -1104,7 +1104,7 @@ class TestOllamaEmbedder:
 
         embedder = OllamaEmbedder()
 
-        with pytest.raises(RAGEmbeddingError, match="No valid texts"):
+        with pytest.raises(AgentIOEmbeddingError, match="No valid texts"):
             embedder.embed_texts(["   ", "\n\n", ""])
 
     def test_api_error_handling(self, mock_error_response, monkeypatch):
@@ -1117,7 +1117,7 @@ class TestOllamaEmbedder:
         embedder = OllamaEmbedder()
         monkeypatch.setattr(embedder._client, "post", mock_post)
 
-        with pytest.raises(RAGEmbeddingError, match="Ollama API error"):
+        with pytest.raises(AgentIOEmbeddingError, match="Ollama API error"):
             embedder.embed_text("Hello")
 
     def test_model_not_found(self, mock_404_response, monkeypatch):
@@ -1130,7 +1130,7 @@ class TestOllamaEmbedder:
         embedder = OllamaEmbedder()
         monkeypatch.setattr(embedder._client, "post", mock_post)
 
-        with pytest.raises(RAGEmbeddingError, match="not found"):
+        with pytest.raises(AgentIOEmbeddingError, match="not found"):
             embedder.embed_text("Hello")
 
     def test_repr(self):
@@ -1434,7 +1434,7 @@ class TestInMemoryVectorStore:
             end_char=1,
         )
 
-        with pytest.raises(RAGVectorStoreError, match="missing embedding"):
+        with pytest.raises(AgentIOVectorStoreError, match="missing embedding"):
             store.add_chunks([chunk])
 
     def test_search_cosine_similarity(self):
@@ -1511,7 +1511,7 @@ class TestInMemoryVectorStore:
         store = InMemoryVectorStore()
         store.add_chunks([self._make_chunk("c1", "d1", "A", [1.0, 0.0])])
 
-        with pytest.raises(RAGVectorStoreError, match="dimension mismatch"):
+        with pytest.raises(AgentIOVectorStoreError, match="dimension mismatch"):
             store.add_chunks([self._make_chunk("c2", "d1", "B", [1.0, 0.0, 0.0])])
 
     def test_search_empty_store(self):
@@ -1606,7 +1606,7 @@ class TestFileSystemSource:
         """Test that non-existent file raises error."""
         source = FileSystemSource()
 
-        with pytest.raises(RAGIngestionError, match="not found"):
+        with pytest.raises(AgentIOIngestionError, match="not found"):
             source.load_document("/nonexistent/path/file.txt")
 
 
@@ -1656,6 +1656,48 @@ class TestVectorStoreSettings:
         assert settings.collection_name == "my-collection"
         assert settings.persist_path == "/data/vectors"
 
+    def test_empty_collection_name_raises(self):
+        """Test empty collection_name raises."""
+        from axiompy.validators import ValidationError
+
+        with pytest.raises(ValidationError, match="collection_name"):
+            VectorStoreSettings(collection_name="")
+
+    def test_invalid_port_raises(self):
+        """Test non-positive port raises."""
+        from axiompy.validators import ValidationError
+
+        with pytest.raises(ValidationError, match="port"):
+            VectorStoreSettings(port=0)
+
+
+class TestSourceSettings:
+    """Tests for SourceSettings dataclass."""
+
+    def test_default_values(self):
+        """Test default values."""
+        from axiompy.agents.io.documents import SourceSettings
+
+        settings = SourceSettings()
+        assert settings.encoding == "utf-8"
+        assert settings.timeout_secs == 30
+
+    def test_invalid_timeout_raises(self):
+        """Test non-positive timeout_secs raises."""
+        from axiompy.agents.io.documents import SourceSettings
+        from axiompy.validators import ValidationError
+
+        with pytest.raises(ValidationError, match="timeout_secs"):
+            SourceSettings(timeout_secs=0)
+
+    def test_empty_encoding_raises(self):
+        """Test empty encoding raises."""
+        from axiompy.agents.io.documents import SourceSettings
+        from axiompy.validators import ValidationError
+
+        with pytest.raises(ValidationError, match="encoding"):
+            SourceSettings(encoding="")
+
 
 class TestChunkerSettings:
     """Tests for ChunkerSettings dataclass."""
@@ -1678,26 +1720,26 @@ class TestChunkerSettings:
 # =============================================================================
 
 
-class TestRAGErrors:
+class TestAgentIOErrors:
     """Tests for RAG error hierarchy."""
 
     def test_error_inheritance(self):
-        """Test that all errors inherit from RAGError."""
+        """Test that all errors inherit from AgentIOError."""
         errors = [
-            RAGConfigurationError("config"),
-            RAGEmbeddingError("embedding"),
-            RAGIngestionError("ingestion"),
-            RAGQueryError("query"),
-            RAGVectorStoreError("store"),
+            AgentIOConfigurationError("config"),
+            AgentIOEmbeddingError("embedding"),
+            AgentIOIngestionError("ingestion"),
+            AgentIOQueryError("query"),
+            AgentIOVectorStoreError("store"),
         ]
 
         for error in errors:
-            assert isinstance(error, RAGError)
+            assert isinstance(error, AgentIOError)
             assert isinstance(error, Exception)
 
     def test_error_messages(self):
         """Test error messages are preserved."""
-        error = RAGConfigurationError("Test message")
+        error = AgentIOConfigurationError("Test message")
         assert str(error) == "Test message"
 
 
@@ -1712,7 +1754,7 @@ class TestReasoningAdapter:
     def test_init(self):
         """Test adapter initialization."""
         from unittest.mock import Mock
-        from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
+        from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
 
         mock_client = Mock()
         mock_client.model = "test-model"
@@ -1725,7 +1767,7 @@ class TestReasoningAdapter:
     def test_generate(self):
         """Test generate method."""
         from unittest.mock import Mock
-        from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
+        from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
 
         mock_client = Mock()
         mock_client.model = "test-model"
@@ -1740,7 +1782,7 @@ class TestReasoningAdapter:
     def test_generate_with_params(self):
         """Test generate with custom temperature and max_tokens."""
         from unittest.mock import Mock
-        from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
+        from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
 
         mock_client = Mock()
         mock_client.model = "test-model"
@@ -1756,8 +1798,8 @@ class TestReasoningAdapter:
     def test_generate_error(self):
         """Test generate error handling."""
         from unittest.mock import Mock
-        from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
-        from axiompy.agents.io.errors import RAGLLMError
+        from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
+        from axiompy.agents.io.errors import AgentIOLLMError
 
         mock_client = Mock()
         mock_client.model = "test-model"
@@ -1765,13 +1807,13 @@ class TestReasoningAdapter:
 
         adapter = ReasoningAdapter(mock_client)
 
-        with pytest.raises(RAGLLMError, match="Generation failed"):
+        with pytest.raises(AgentIOLLMError, match="Generation failed"):
             adapter.generate("Question", "Context")
 
     def test_custom_prompt_template(self):
         """Test adapter with custom prompt template."""
         from unittest.mock import Mock
-        from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
+        from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
 
         mock_client = Mock()
         mock_client.model = "test-model"
@@ -1963,7 +2005,7 @@ class TestChromaVectorStore:
             end_char=7,
         )
 
-        with pytest.raises(RAGVectorStoreError, match="missing embedding"):
+        with pytest.raises(AgentIOVectorStoreError, match="missing embedding"):
             store.add_chunks([chunk])
 
     def test_search(self, chroma_available, unique_collection):
@@ -2231,7 +2273,7 @@ class TestPineconeVectorStore:
         """Test missing API key raises error."""
         from axiompy.agents.io.vector.pinecone import PineconeVectorStore
 
-        with pytest.raises(RAGVectorStoreError, match="API key is required"):
+        with pytest.raises(AgentIOVectorStoreError, match="API key is required"):
             PineconeVectorStore(
                 api_key="",
                 index_name="test",
@@ -2242,7 +2284,7 @@ class TestPineconeVectorStore:
         """Test missing index name raises error."""
         from axiompy.agents.io.vector.pinecone import PineconeVectorStore
 
-        with pytest.raises(RAGVectorStoreError, match="index name is required"):
+        with pytest.raises(AgentIOVectorStoreError, match="index name is required"):
             PineconeVectorStore(
                 api_key="pk-test",
                 index_name="",
@@ -2253,7 +2295,7 @@ class TestPineconeVectorStore:
         """Test missing host raises error."""
         from axiompy.agents.io.vector.pinecone import PineconeVectorStore
 
-        with pytest.raises(RAGVectorStoreError, match="host URL is required"):
+        with pytest.raises(AgentIOVectorStoreError, match="host URL is required"):
             PineconeVectorStore(
                 api_key="pk-test",
                 index_name="test",
@@ -2314,7 +2356,7 @@ class TestPineconeVectorStore:
             end_char=7,
         )
 
-        with pytest.raises(RAGVectorStoreError, match="missing embedding"):
+        with pytest.raises(AgentIOVectorStoreError, match="missing embedding"):
             store.add_chunks([chunk])
 
     def test_search(self, mock_query_response, monkeypatch):
@@ -2462,7 +2504,7 @@ class TestPineconeVectorStore:
 
         chunk = self._make_chunk("c1", "d1", "Content", [0.1, 0.2, 0.3])
 
-        with pytest.raises(RAGVectorStoreError, match="upsert failed"):
+        with pytest.raises(AgentIOVectorStoreError, match="upsert failed"):
             store.add_chunks([chunk])
 
     def test_add_chunks_upsert_exception(self, monkeypatch):
@@ -2481,7 +2523,7 @@ class TestPineconeVectorStore:
 
         chunk = self._make_chunk("c1", "d1", "Content", [0.1, 0.2, 0.3])
 
-        with pytest.raises(RAGVectorStoreError, match="upsert failed"):
+        with pytest.raises(AgentIOVectorStoreError, match="upsert failed"):
             store.add_chunks([chunk])
 
     def test_search_with_filters(self, monkeypatch):
@@ -2534,7 +2576,7 @@ class TestPineconeVectorStore:
         )
         monkeypatch.setattr(store._client, "post", mock_post)
 
-        with pytest.raises(RAGVectorStoreError, match="query failed"):
+        with pytest.raises(AgentIOVectorStoreError, match="query failed"):
             store.search([0.1, 0.2, 0.3])
 
     def test_search_exception(self, monkeypatch):
@@ -2551,7 +2593,7 @@ class TestPineconeVectorStore:
         )
         monkeypatch.setattr(store._client, "post", mock_post)
 
-        with pytest.raises(RAGVectorStoreError, match="search failed"):
+        with pytest.raises(AgentIOVectorStoreError, match="search failed"):
             store.search([0.1, 0.2, 0.3])
 
     def test_delete_error_status(self, monkeypatch):
@@ -2575,7 +2617,7 @@ class TestPineconeVectorStore:
         )
         monkeypatch.setattr(store._client, "post", mock_post)
 
-        with pytest.raises(RAGVectorStoreError, match="delete failed"):
+        with pytest.raises(AgentIOVectorStoreError, match="delete failed"):
             store.delete_document("doc1")
 
     def test_delete_exception(self, monkeypatch):
@@ -2592,7 +2634,7 @@ class TestPineconeVectorStore:
         )
         monkeypatch.setattr(store._client, "post", mock_post)
 
-        with pytest.raises(RAGVectorStoreError, match="delete failed"):
+        with pytest.raises(AgentIOVectorStoreError, match="delete failed"):
             store.delete_document("doc1")
 
     def test_chunk_count_with_namespace(self, monkeypatch):
@@ -2740,7 +2782,7 @@ class TestPGVectorStore:
         """Test missing database URL raises error."""
         from axiompy.agents.io.vector.pgvector import PGVectorStore
 
-        with pytest.raises(RAGVectorStoreError, match="database_url is required"):
+        with pytest.raises(AgentIOVectorStoreError, match="database_url is required"):
             PGVectorStore(database_url="")
 
     def test_init_psycopg2_not_installed(self, monkeypatch):
@@ -2799,7 +2841,7 @@ class TestPGVectorStore:
             end_char=7,
         )
 
-        with pytest.raises(RAGVectorStoreError, match="missing embedding"):
+        with pytest.raises(AgentIOVectorStoreError, match="missing embedding"):
             store.add_chunks([chunk])
 
     def test_add_chunks_dimension_mismatch(self, psycopg2_available, mock_connection, monkeypatch):
@@ -2818,7 +2860,7 @@ class TestPGVectorStore:
 
         chunk = self._make_chunk("c1", "d1", "Content", [0.1, 0.2])  # Wrong dimension
 
-        with pytest.raises(RAGVectorStoreError, match="dimension mismatch"):
+        with pytest.raises(AgentIOVectorStoreError, match="dimension mismatch"):
             store.add_chunks([chunk])
 
     def test_repr(self, psycopg2_available, mock_connection, monkeypatch):
@@ -3255,7 +3297,7 @@ class TestPGVectorStore:
 
         from axiompy.agents.io.vector.pgvector import PGVectorStore
 
-        with pytest.raises(RAGVectorStoreError, match="Failed to connect"):
+        with pytest.raises(AgentIOVectorStoreError, match="Failed to connect"):
             PGVectorStore(database_url="postgresql://test")
 
     def test_close(self, psycopg2_available, monkeypatch):
@@ -3464,9 +3506,9 @@ class TestSourceFactory:
             SourceType,
             SourceSettings,
         )
-        from axiompy.agents.io.errors import RAGConfigurationError
+        from axiompy.agents.io.errors import AgentIOConfigurationError
 
-        with pytest.raises(RAGConfigurationError, match="StorageSettings"):
+        with pytest.raises(AgentIOConfigurationError, match="StorageSettings"):
             SourceFactory.create(SourceType.OBJECT_STORE, SourceSettings())
 
     def test_database_requires_database_settings(self):
@@ -3476,9 +3518,9 @@ class TestSourceFactory:
             SourceType,
             SourceSettings,
         )
-        from axiompy.agents.io.errors import RAGConfigurationError
+        from axiompy.agents.io.errors import AgentIOConfigurationError
 
-        with pytest.raises(RAGConfigurationError, match="DatabaseSettings"):
+        with pytest.raises(AgentIOConfigurationError, match="DatabaseSettings"):
             SourceFactory.create(SourceType.DATABASE, SourceSettings())
 
     def test_source_type_enum_values(self):
@@ -3589,7 +3631,7 @@ class TestURLSource:
         from unittest.mock import Mock, patch
 
         from axiompy.agents.io.documents.url import URLSource
-        from axiompy.agents.io.errors import RAGIngestionError
+        from axiompy.agents.io.errors import AgentIOIngestionError
 
         with patch.object(URLSource, "__init__", lambda self, **kwargs: None):
             source = URLSource()
@@ -3598,7 +3640,7 @@ class TestURLSource:
             # First call succeeds, second fails
             def mock_load(url):
                 if "fail" in url:
-                    raise RAGIngestionError("Failed")
+                    raise AgentIOIngestionError("Failed")
                 mock_meta = Mock()
                 mock_meta.source = url
                 mock_meta.extra = {"domain": "example.com"}
@@ -3895,9 +3937,9 @@ class TestPDFSource:
             pytest.skip("pypdf is installed")
         else:
             from axiompy.agents.io.documents.pdf import PDFSource
-            from axiompy.agents.io.errors import RAGIngestionError
+            from axiompy.agents.io.errors import AgentIOIngestionError
 
-            with pytest.raises(RAGIngestionError, match="pypdf"):
+            with pytest.raises(AgentIOIngestionError, match="pypdf"):
                 PDFSource()
 
     def test_pdf_source_initialization(self):
@@ -3914,11 +3956,11 @@ class TestPDFSource:
         pytest.importorskip("pypdf")
 
         from axiompy.agents.io.documents.pdf import PDFSource
-        from axiompy.agents.io.errors import RAGIngestionError
+        from axiompy.agents.io.errors import AgentIOIngestionError
 
         source = PDFSource()
 
-        with pytest.raises(RAGIngestionError, match="not found"):
+        with pytest.raises(AgentIOIngestionError, match="not found"):
             source.load_document("/nonexistent/file.pdf")
 
     def test_pdf_source_not_pdf_file(self):
@@ -3927,7 +3969,7 @@ class TestPDFSource:
         import tempfile
 
         from axiompy.agents.io.documents.pdf import PDFSource
-        from axiompy.agents.io.errors import RAGIngestionError
+        from axiompy.agents.io.errors import AgentIOIngestionError
 
         source = PDFSource()
 
@@ -3937,7 +3979,7 @@ class TestPDFSource:
             temp_path = f.name
 
         try:
-            with pytest.raises(RAGIngestionError, match="Not a PDF"):
+            with pytest.raises(AgentIOIngestionError, match="Not a PDF"):
                 source.load_document(temp_path)
         finally:
             import os

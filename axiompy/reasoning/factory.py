@@ -1,6 +1,6 @@
 """ReasoningFactory - Factory for creating AI client instances."""
 
-from typing import Optional
+from typing import Any, Optional
 
 from axiompy.io.http import HTTPClient
 from axiompy.reasoning.client import AIClient
@@ -33,17 +33,18 @@ class ReasoningFactory:
         endpoint = cfg.endpoint
         api_key = cfg.api_key
 
-        if provider == ReasoningProvider.OLLAMA:
-            model = model or "mistral"
-            endpoint = endpoint or "http://localhost:11434/api/generate"
-        elif provider == ReasoningProvider.OPENAI:
-            model = model or "gpt-3.5-turbo"
-            endpoint = endpoint or "https://api.openai.com/v1/chat/completions"
-        elif provider == ReasoningProvider.ANTHROPIC:
-            model = model or "claude-2"
-            endpoint = endpoint or "https://api.anthropic.com/v1/complete"
-        else:
-            raise ValueError(f"Unknown provider: {provider}")
+        match provider:
+            case ReasoningProvider.OLLAMA:
+                model = model or "mistral"
+                endpoint = endpoint or "http://localhost:11434/api/generate"
+            case ReasoningProvider.OPENAI:
+                model = model or "gpt-3.5-turbo"
+                endpoint = endpoint or "https://api.openai.com/v1/chat/completions"
+            case ReasoningProvider.ANTHROPIC:
+                model = model or "claude-2"
+                endpoint = endpoint or "https://api.anthropic.com/v1/complete"
+            case _:
+                raise ValueError(f"Unknown provider: {provider}")
 
         if not model:
             raise ValueError(f"Model must be specified for provider {provider}")
@@ -60,45 +61,31 @@ class ReasoningFactory:
         )
 
     @staticmethod
-    def create_ollama(
-        model: str = "mistral",
-        endpoint: str = "http://localhost:11434/api/generate",
-        http_client: Optional[HTTPClient] = None,
-        settings: Optional[ReasoningSettings] = None,
+    def create_mock(
+        responses: Optional[list[str]] = None,
+        provider: ReasoningProvider = ReasoningProvider.OLLAMA,
     ) -> AIClient:
-        cfg = settings or ReasoningSettings(model=model, endpoint=endpoint)
-        return ReasoningFactory.create(
-            ReasoningProvider.OLLAMA,
-            settings=cfg,
-            http_client=http_client,
-        )
+        """
+        Create a mock AIClient for testing.
 
-    @staticmethod
-    def create_openai(
-        api_key: str,
-        model: str = "gpt-3.5-turbo",
-        endpoint: str = "https://api.openai.com/v1/chat/completions",
-        http_client: Optional[HTTPClient] = None,
-        settings: Optional[ReasoningSettings] = None,
-    ) -> AIClient:
-        cfg = settings or ReasoningSettings(model=model, endpoint=endpoint, api_key=api_key)
-        return ReasoningFactory.create(
-            ReasoningProvider.OPENAI,
-            settings=cfg,
-            http_client=http_client,
-        )
+        Args:
+            responses: Canned completion strings (cycles on repeated calls)
+            provider: Provider enum used for client metadata
 
-    @staticmethod
-    def create_anthropic(
-        api_key: str,
-        model: str = "claude-2",
-        endpoint: str = "https://api.anthropic.com/v1/complete",
-        http_client: Optional[HTTPClient] = None,
-        settings: Optional[ReasoningSettings] = None,
-    ) -> AIClient:
-        cfg = settings or ReasoningSettings(model=model, endpoint=endpoint, api_key=api_key)
-        return ReasoningFactory.create(
-            ReasoningProvider.ANTHROPIC,
-            settings=cfg,
-            http_client=http_client,
+        Returns:
+            AIClient with mocked generate_completion
+        """
+        canned = list(responses or ["Mock completion."])
+        client = ReasoningFactory.create(
+            provider,
+            settings=ReasoningSettings(model="mock-model", endpoint="http://mock"),
         )
+        call_index = {"i": 0}
+
+        def _fake_completion(*_args: Any, **_kwargs: Any) -> str:
+            text = canned[call_index["i"] % len(canned)]
+            call_index["i"] += 1
+            return text
+
+        client.generate_completion = _fake_completion  # type: ignore[method-assign]
+        return client

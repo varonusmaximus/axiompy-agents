@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import List, Optional, Set
 
 from axiompy.agents.io.types import Document, DocumentMetadata
-from axiompy.agents.io.errors import RAGIngestionError
+from axiompy.agents.io.errors import AgentIOIngestionError
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -134,7 +134,7 @@ class FileSystemSource:
             List of loaded documents
 
         Raises:
-            RAGIngestionError: If loading fails
+            AgentIOIngestionError: If loading fails
         """
         documents: List[Document] = []
         seen_paths: Set[str] = set()
@@ -165,7 +165,7 @@ class FileSystemSource:
 
             except Exception as e:
                 logger.error(f"Error processing path {path}: {e}")
-                raise RAGIngestionError(f"Failed to load from {path}: {e}") from e
+                raise AgentIOIngestionError(f"Failed to load from {path}: {e}") from e
 
         logger.info(f"Loaded {len(documents)} documents from {len(paths)} paths")
         return documents
@@ -181,10 +181,10 @@ class FileSystemSource:
             Loaded document
 
         Raises:
-            RAGIngestionError: If loading fails
+            AgentIOIngestionError: If loading fails
         """
         if not os.path.isfile(path):
-            raise RAGIngestionError(f"File not found: {path}")
+            raise AgentIOIngestionError(f"File not found: {path}")
 
         return self._load_file(path)
 
@@ -256,7 +256,7 @@ class FileSystemSource:
             Document object
 
         Raises:
-            RAGIngestionError: If reading fails
+            AgentIOIngestionError: If reading fails
         """
         try:
             abs_path = os.path.abspath(path)
@@ -292,11 +292,11 @@ class FileSystemSource:
             return doc
 
         except UnicodeDecodeError as e:
-            raise RAGIngestionError(
+            raise AgentIOIngestionError(
                 f"Failed to decode {path} with {self._encoding} encoding: {e}"
             ) from e
         except Exception as e:
-            raise RAGIngestionError(f"Failed to read {path}: {e}") from e
+            raise AgentIOIngestionError(f"Failed to read {path}: {e}") from e
 
     def _get_content_type(self, extension: str) -> str:
         """Map file extension to MIME content type."""

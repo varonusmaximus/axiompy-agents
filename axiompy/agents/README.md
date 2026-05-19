@@ -7,7 +7,7 @@ Documentation and examples for building agentic applications on **axiompy-agents
 | Module | Purpose |
 |--------|---------|
 | [`axiompy.kernel`](../kernel/) | Hexagonal agent runtime (native loop, tools, memory, events) |
-| [`axiompy.agents.io`](io/) | Embeddings, vector stores, document sources (compose with kernel) |
+| [`axiompy.agents.io`](io/README.md) | Embeddings, vector stores, document sources (compose with kernel) |
 | [`axiompy.reasoning`](../reasoning/) | Provider-agnostic LLM clients; use `ReasoningLLMAdapter` with kernel |
 
 ## Quick example

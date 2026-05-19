@@ -31,7 +31,7 @@ import contextlib
 import json
 from typing import Any, Dict, List, Optional
 
-from axiompy.agents.io.errors import RAGVectorStoreError
+from axiompy.agents.io.errors import AgentIOVectorStoreError
 from axiompy.agents.io.sql_identifiers import validate_sql_identifier
 from axiompy.agents.io.types import DocumentChunk, SearchResult
 from axiompy.loggers import LoggerFactory
@@ -72,16 +72,16 @@ class PGVectorStore:
             create_table: Whether to create the table if not exists
 
         Raises:
-            RAGVectorStoreError: If cannot connect or psycopg2 not installed
+            AgentIOVectorStoreError: If cannot connect or psycopg2 not installed
         """
         if not database_url:
-            raise RAGVectorStoreError("PostgreSQL database_url is required")
+            raise AgentIOVectorStoreError("PostgreSQL database_url is required")
 
         try:
             import psycopg2
             from psycopg2.extras import execute_values
         except ImportError as e:
-            raise RAGVectorStoreError(
+            raise AgentIOVectorStoreError(
                 "psycopg2 not installed. Install with: pip install psycopg2-binary"
             ) from e
 
@@ -105,7 +105,7 @@ class PGVectorStore:
             )
 
         except Exception as e:
-            raise RAGVectorStoreError(f"Failed to connect to PostgreSQL: {e}") from e
+            raise AgentIOVectorStoreError(f"Failed to connect to PostgreSQL: {e}") from e
 
     def _create_table(self) -> None:
         """Create the embeddings table if not exists."""
@@ -153,7 +153,7 @@ class PGVectorStore:
             Number of chunks added
 
         Raises:
-            RAGVectorStoreError: If chunks missing embeddings or insert fails
+            AgentIOVectorStoreError: If chunks missing embeddings or insert fails
         """
         if not chunks:
             return 0
@@ -162,13 +162,13 @@ class PGVectorStore:
         values = []
         for i, chunk in enumerate(chunks):
             if chunk.embedding is None:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Chunk {i} missing embedding. Embed chunks before adding."
                 )
 
             # Validate embedding dimension
             if len(chunk.embedding) != self._embedding_dim:
-                raise RAGVectorStoreError(
+                raise AgentIOVectorStoreError(
                     f"Embedding dimension mismatch: expected {self._embedding_dim}, "
                     f"got {len(chunk.embedding)}"
                 )
@@ -211,7 +211,7 @@ class PGVectorStore:
             return len(chunks)
 
         except Exception as e:
-            raise RAGVectorStoreError(f"Failed to insert chunks: {e}") from e
+            raise AgentIOVectorStoreError(f"Failed to insert chunks: {e}") from e
 
     def search(
         self,
@@ -303,7 +303,7 @@ class PGVectorStore:
             return results
 
         except Exception as e:
-            raise RAGVectorStoreError(f"Search failed: {e}") from e
+            raise AgentIOVectorStoreError(f"Search failed: {e}") from e
 
     def delete_document(self, document_id: str) -> int:
         """
@@ -327,7 +327,7 @@ class PGVectorStore:
             return deleted
 
         except Exception as e:
-            raise RAGVectorStoreError(f"Delete failed: {e}") from e
+            raise AgentIOVectorStoreError(f"Delete failed: {e}") from e
 
     def clear(self) -> None:
         """Clear all chunks from the store."""
@@ -338,7 +338,7 @@ class PGVectorStore:
             logger.info("Cleared all chunks from pgvector store")
 
         except Exception as e:
-            raise RAGVectorStoreError(f"Clear failed: {e}") from e
+            raise AgentIOVectorStoreError(f"Clear failed: {e}") from e
 
     @property
     def chunk_count(self) -> int:

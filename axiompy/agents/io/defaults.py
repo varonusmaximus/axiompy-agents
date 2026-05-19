@@ -1,6 +1,6 @@
-"""RAG Default Configuration.
+"""agents.io default configuration.
 
-Contains default values and constants for RAG operations.
+Default values and constants for embeddings, chunking, and retrieval prompts.
 """
 
 # Chunking defaults
@@ -19,7 +19,7 @@ DEFAULT_MAX_TOKENS = 1000
 DEFAULT_EMBEDDING_BATCH_SIZE = 100
 
 # Default RAG prompt template
-DEFAULT_RAG_PROMPT = """Use the following context to answer the question. If you cannot answer \
+DEFAULT_RETRIEVAL_PROMPT = """Use the following context to answer the question. If you cannot answer \
 the question based on the context, say "I don't have enough information to answer this question."
 
 Context:

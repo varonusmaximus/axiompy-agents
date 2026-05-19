@@ -1,6 +1,6 @@
-"""RAG Domain Models.
+"""agents.io domain models.
 
-Core data structures for RAG operations following axiompy dataclass patterns.
+Core data structures for retrieval workflows following axiompy dataclass patterns.
 
 Models:
 - Document: A document to be indexed
@@ -8,7 +8,7 @@ Models:
 - DocumentChunk: A chunk of a document with embedding
 - Query: A user query for RAG
 - SearchResult: A matched chunk with similarity score
-- RAGResponse: Final response with context and answer
+- RetrievalResponse: Final response with context and answer
 """
 
 from dataclasses import dataclass, field
@@ -158,7 +158,7 @@ class SearchResult:
 
 
 @dataclass
-class RAGResponse:
+class RetrievalResponse:
     """
     Final RAG response with context and answer.
 

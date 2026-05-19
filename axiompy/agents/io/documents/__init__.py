@@ -36,8 +36,9 @@ from typing import Any, Dict, List, Optional, Set
 # Always available
 from axiompy.agents.io.documents.filesystem import FileSystemSource
 from axiompy.agents.io.ports import DocumentSource
-from axiompy.agents.io.errors import RAGConfigurationError
+from axiompy.agents.io.errors import AgentIOConfigurationError
 from axiompy.loggers import LoggerFactory
+from axiompy.validators import ensure_in_range, ensure_not_empty, ensure_positive
 
 logger = LoggerFactory.create_logger(__name__)
 
@@ -100,6 +101,13 @@ class SourceSettings:
     # General
     extra: Dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        ensure_not_empty(self.encoding, "encoding must not be empty")
+        ensure_positive(self.timeout_secs, "timeout_secs must be positive")
+        ensure_in_range(self.timeout_secs, 1, 3600, "timeout_secs must be 1-3600 seconds")
+        if self.user_agent is not None:
+            ensure_not_empty(self.user_agent, "user_agent must not be empty")
+
 
 class SourceFactory:
     """
@@ -138,7 +146,7 @@ class SourceFactory:
             Configured DocumentSource instance
 
         Raises:
-            RAGConfigurationError: If configuration is invalid
+            AgentIOConfigurationError: If configuration is invalid
 
         Note:
             For S3 and Database sources, use create_s3() or create_database()
@@ -172,13 +180,13 @@ class SourceFactory:
                 )
 
             case SourceType.OBJECT_STORE:
-                raise RAGConfigurationError(
+                raise AgentIOConfigurationError(
                     "ObjectStoreSource requires StorageSettings. "
                     "Use SourceFactory.create_object_store() instead."
                 )
 
             case SourceType.DATABASE:
-                raise RAGConfigurationError(
+                raise AgentIOConfigurationError(
                     "DatabaseSource requires DatabaseSettings. "
                     "Use SourceFactory.create_database() instead."
                 )
@@ -189,7 +197,7 @@ class SourceFactory:
                 return MockDocumentSource()
 
             case _:
-                raise RAGConfigurationError(f"Unknown source type: {source_type}")
+                raise AgentIOConfigurationError(f"Unknown source type: {source_type}")
 
     @staticmethod
     def create_object_store(

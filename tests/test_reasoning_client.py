@@ -285,19 +285,8 @@ class TestReasoningFactory:
             # Try to create with invalid string (would fail type check)
             ReasoningFactory.create("nonexistent")  # type: ignore
 
-    def test_create_ollama_helper(self):
-        """Test create_ollama helper method"""
-        client = ReasoningFactory.create_ollama(model="llama2")
-        assert client.model == "llama2"
-
-    def test_create_openai_helper(self):
-        """Test create_openai helper method"""
-        client = ReasoningFactory.create_openai(api_key="sk-test", model="gpt-4")
-        assert client.model == "gpt-4"
-        assert client.api_key == "sk-test"
-
-    def test_create_anthropic_helper(self):
-        """Test create_anthropic helper method"""
-        client = ReasoningFactory.create_anthropic(api_key="sk-ant-test", model="claude-3-opus")
-        assert client.model == "claude-3-opus"
-        assert client.api_key == "sk-ant-test"
+    def test_create_mock(self):
+        """Test create_mock returns canned completions"""
+        client = ReasoningFactory.create_mock(responses=["first", "second"])
+        assert client.generate_completion(prompt="hi") == "first"
+        assert client.generate_completion(prompt="hi") == "second"

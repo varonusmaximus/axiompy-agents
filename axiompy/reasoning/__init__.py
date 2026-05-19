@@ -17,7 +17,7 @@ Architecture:
     ├── metadata.py          # DatasetMetadata and schema definitions
     ├── metadata_helpers.py  # Utilities for working with metadata
     ├── client.py            # AIClient (provider-agnostic LLM interface)
-    ├── factory.py           # AIClientFactory for creating clients
+    ├── factory.py           # ReasoningFactory for creating clients
     ├── prompts.py           # DynamicPromptBuilder for prompt construction
     ├── agents/              # AI agents for reasoning
     │   └── query.py         # QueryAgent for intelligent query routing
@@ -32,7 +32,7 @@ from axiompy.reasoning.agents.query import QueryAgent
 from axiompy.reasoning.base import BaseDatasetService
 from axiompy.reasoning.client import AIClient
 from axiompy.reasoning.adapter import ReasoningLLMAdapter
-from axiompy.reasoning.rag_llm_adapter import ReasoningAdapter
+from axiompy.reasoning.llm_provider_adapter import ReasoningAdapter
 from axiompy.reasoning.factory import ReasoningFactory
 from axiompy.reasoning.settings import ReasoningSettings
 from axiompy.reasoning.metadata import (

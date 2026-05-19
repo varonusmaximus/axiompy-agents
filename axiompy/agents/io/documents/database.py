@@ -43,7 +43,7 @@ Example:
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from axiompy.agents.io.errors import RAGIngestionError
+from axiompy.agents.io.errors import AgentIOIngestionError
 from axiompy.agents.io.sql_identifiers import join_sql_identifiers, validate_sql_identifier
 from axiompy.agents.io.types import Document, DocumentMetadata
 from axiompy.io.database import Database, DatabaseFactory, DatabaseSettings, DatabaseType
@@ -114,7 +114,7 @@ class DatabaseSource:
             List of Document objects
 
         Raises:
-            RAGIngestionError: If query fails
+            AgentIOIngestionError: If query fails
         """
         safe_table = validate_sql_identifier(table, "table")
         columns = [id_column, content_column]
@@ -161,7 +161,7 @@ class DatabaseSource:
             List of Document objects
 
         Raises:
-            RAGIngestionError: If query fails
+            AgentIOIngestionError: If query fails
         """
         try:
             # Execute query
@@ -192,7 +192,7 @@ class DatabaseSource:
             return documents
 
         except Exception as e:
-            raise RAGIngestionError(f"Failed to execute query: {e}") from e
+            raise AgentIOIngestionError(f"Failed to execute query: {e}") from e
 
     def _row_to_document(
         self,
@@ -256,11 +256,11 @@ class DatabaseSource:
             Document object
 
         Raises:
-            RAGIngestionError: If document not found or query fails
+            AgentIOIngestionError: If document not found or query fails
         """
         parts = path.split(":")
         if len(parts) < 2:
-            raise RAGIngestionError(
+            raise AgentIOIngestionError(
                 f"Invalid path format: {path}. Use 'table:id' or 'table:column:value'"
             )
 
@@ -279,14 +279,14 @@ class DatabaseSource:
         try:
             results = self._db.execute(query, (id_value,))
             if not results:
-                raise RAGIngestionError(f"Document not found: {path}")
+                raise AgentIOIngestionError(f"Document not found: {path}")
 
             row = results[0]
 
             # Try to find content column
             content_column = self._guess_content_column(row)
             if not content_column:
-                raise RAGIngestionError(f"Could not determine content column for table {table}")
+                raise AgentIOIngestionError(f"Could not determine content column for table {table}")
 
             doc = self._row_to_document(
                 row=row,
@@ -297,14 +297,14 @@ class DatabaseSource:
             )
 
             if not doc:
-                raise RAGIngestionError(f"Failed to convert row to document: {path}")
+                raise AgentIOIngestionError(f"Failed to convert row to document: {path}")
 
             return doc
 
-        except RAGIngestionError:
+        except AgentIOIngestionError:
             raise
         except Exception as e:
-            raise RAGIngestionError(f"Failed to load document {path}: {e}") from e
+            raise AgentIOIngestionError(f"Failed to load document {path}: {e}") from e
 
     def load_documents(self, paths: List[str]) -> List[Document]:
         """
@@ -352,7 +352,7 @@ class DatabaseSource:
                 try:
                     doc = self.load_document(path)
                     documents.append(doc)
-                except RAGIngestionError as e:
+                except AgentIOIngestionError as e:
                     logger.warning(f"Skipping {path}: {e}")
                     continue
 
