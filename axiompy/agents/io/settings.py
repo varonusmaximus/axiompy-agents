@@ -16,7 +16,13 @@ from axiompy.agents.io.defaults import (
     DEFAULT_TEMPERATURE,
 )
 from axiompy.agents.io.documents.chunker import FixedSizeChunker, ParagraphChunker, SentenceChunker
-from axiompy.validators import ensure_in_range, ensure_not_empty, ensure_positive
+from axiompy.validators import (
+    ensure_gte,
+    ensure_in_range,
+    ensure_lt,
+    ensure_not_empty,
+    ensure_positive,
+)
 
 
 class EmbedderType(str, Enum):
@@ -107,10 +113,8 @@ class ChunkerSettings:
 
     def __post_init__(self) -> None:
         ensure_positive(self.chunk_size, "chunk_size must be positive")
-        if self.chunk_overlap < 0:
-            raise ValueError("chunk_overlap cannot be negative")
-        if self.chunk_overlap >= self.chunk_size:
-            raise ValueError("chunk_overlap must be less than chunk_size")
+        ensure_gte(self.chunk_overlap, 0, "chunk_overlap cannot be negative")
+        ensure_lt(self.chunk_overlap, self.chunk_size, "chunk_overlap must be less than chunk_size")
 
 
 class ChunkerFactory:

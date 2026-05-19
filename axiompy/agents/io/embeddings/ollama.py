@@ -32,7 +32,8 @@ Requirements:
 from typing import List
 
 from axiompy.agents.io.errors import AgentIOEmbeddingError
-from axiompy.io.http import HTTPClientFactory
+from axiompy.decorators import LogExecutionTime, Retry
+from axiompy.io.http import HTTPClientError, HTTPClientFactory
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -113,6 +114,14 @@ class OllamaEmbedder:
         """Get the model name."""
         return self._model
 
+    @Retry(
+        logger,
+        max_attempts=3,
+        delay=0.5,
+        backoff=2.0,
+        exceptions=(HTTPClientError, AgentIOEmbeddingError),
+    )
+    @LogExecutionTime(logger)
     def embed_text(self, text: str) -> List[float]:
         """
         Generate embedding for a single text.
@@ -138,16 +147,6 @@ class OllamaEmbedder:
                 },
             )
 
-            if response.status_code != 200:
-                error_msg = response.text
-                if response.status_code == 404:
-                    raise AgentIOEmbeddingError(
-                        f"Model '{self._model}' not found. Run: ollama pull {self._model}"
-                    )
-                raise AgentIOEmbeddingError(
-                    f"Ollama API error ({response.status_code}): {error_msg}"
-                )
-
             data = response.json()
             embedding = data.get("embedding", [])
 
@@ -160,8 +159,14 @@ class OllamaEmbedder:
 
         except AgentIOEmbeddingError:
             raise
+        except HTTPClientError as e:
+            error_msg = str(e)
+            if "404" in error_msg:
+                raise AgentIOEmbeddingError(
+                    f"Model '{self._model}' not found. Run: ollama pull {self._model}"
+                ) from e
+            raise AgentIOEmbeddingError(f"Ollama API error: {error_msg}") from e
         except Exception as e:
-            # Check for connection errors
             if "Connection" in str(e) or "refused" in str(e).lower():
                 raise AgentIOEmbeddingError(
                     f"Cannot connect to Ollama at {self._host}. "

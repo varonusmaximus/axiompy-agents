@@ -41,7 +41,9 @@ from axiompy.reasoning.metadata import (
     ScopeMetadata,
     TableSchemaMetadata,
 )
+from axiompy.reasoning.secrets_loader import resolve_secret
 from axiompy.reasoning.types import ReasoningProvider
+from axiompy.reasoning.validators import SQLValidator, ValidationResult
 
 __all__ = [
     "BaseDatasetService",
@@ -56,4 +58,7 @@ __all__ = [
     "TableSchemaMetadata",
     "ExampleMetadata",
     "QueryAgent",
+    "SQLValidator",
+    "ValidationResult",
+    "resolve_secret",
 ]

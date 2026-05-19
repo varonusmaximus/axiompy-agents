@@ -15,10 +15,8 @@ packages = [{ include = "axiompy" }]
 [tool.poetry.dependencies]
 python = ">=3.12"
 # PyPI only has axiompy 0.2.x; use Git until 2.0 is published.
-axiompy = { git = "https://github.com/varonusmaximus/axiompy.git", branch = "main", extras = [
-    "servers",
+axiompy = { git = "https://github.com/varonusmaximus/axiompy.git", rev = "281bb0f", extras = [
     "http",
-    "http-async",
     "databases",
     "storage",
 ] }
@@ -37,7 +35,8 @@ license = { text = "MIT" }
 authors = [{ name = "Jorge Varona", email = "varonusmaximus@users.noreply.github.com" }]
 # PyPI only has axiompy 0.2.x; pin Git until 2.0 is published (then use >=2.0.0,<3.0.0).
 dependencies = [
-    "axiompy[servers,http,http-async,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@main",
+    # sqlparse is transitive via axiompy for SQL validation in reasoning.
+    "axiompy[http,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@281bb0f",
 ]
 
 [project.urls]
@@ -54,9 +53,8 @@ io-rag = [
     "sentence-transformers>=2.2.0",
     "transformers>=4.53.0",
     "pypdf>=4.0.0",
+    "psycopg2-binary>=2.9.0",
 ]
-openai = ["openai>=1.0.0"]
-anthropic = ["anthropic>=0.18.0"]
 kernel-langgraph = ["langgraph>=0.2.0"]
 kernel-langchain = ["langchain-core>=0.3.0"]
 test-all = [
@@ -80,6 +78,10 @@ rag = [
     "sentence-transformers>=2.2.0",
     "transformers>=4.53.0",
     "pypdf>=4.0.0",
+    "psycopg2-binary>=2.9.0",
+]
+reasoning-data = [
+    "axiompy-data @ git+https://github.com/varonusmaximus/axiompy-data.git@main",
 ]
 
 [tool.pytest.ini_options]

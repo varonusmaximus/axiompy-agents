@@ -28,7 +28,8 @@ Models:
 from typing import List, Optional
 
 from axiompy.agents.io.errors import AgentIOEmbeddingError
-from axiompy.io.http import HTTPClientFactory
+from axiompy.decorators import LogExecutionTime, Retry
+from axiompy.io.http import HTTPClientError, HTTPClientFactory
 from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
@@ -132,6 +133,14 @@ class OpenAIEmbedder:
         embeddings = self.embed_texts([text])
         return embeddings[0]
 
+    @Retry(
+        logger,
+        max_attempts=3,
+        delay=0.5,
+        backoff=2.0,
+        exceptions=(HTTPClientError, AgentIOEmbeddingError),
+    )
+    @LogExecutionTime(logger)
     def embed_texts(self, texts: List[str]) -> List[List[float]]:
         """
         Generate embeddings for multiple texts (batch).
@@ -162,12 +171,6 @@ class OpenAIEmbedder:
                 },
             )
 
-            if response.status_code != 200:
-                error_msg = response.text
-                raise AgentIOEmbeddingError(
-                    f"OpenAI API error ({response.status_code}): {error_msg}"
-                )
-
             data = response.json()
 
             # Extract embeddings from response
@@ -184,6 +187,8 @@ class OpenAIEmbedder:
 
         except AgentIOEmbeddingError:
             raise
+        except HTTPClientError as e:
+            raise AgentIOEmbeddingError(f"OpenAI API error: {e}") from e
         except Exception as e:
             raise AgentIOEmbeddingError(f"OpenAI embedding failed: {e}") from e
 

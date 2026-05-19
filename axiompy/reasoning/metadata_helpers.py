@@ -6,9 +6,8 @@ DatasetMetadata and formatting it for use by AI agents and other components.
 
 from __future__ import annotations
 
-import re
-
 from axiompy.reasoning.metadata import DatasetMetadata
+from axiompy.reasoning.validators import SQLValidator
 
 
 def extract_all_columns(metadata: DatasetMetadata) -> set[str]:
@@ -39,95 +38,15 @@ def extract_all_columns(metadata: DatasetMetadata) -> set[str]:
 
 def extract_columns_from_sql(sql: str) -> set[str]:
     """
-    Extract column references from SQL query using regex.
-
-    This function performs basic regex-based column extraction.
-    For complex SQL with subqueries, consider using sqlparse/sqlglot.
-
-    Patterns matched:
-    - SELECT column_name
-    - WHERE column_name = value
-    - ORDER BY column_name
-    - GROUP BY column_name
-    - JOIN ... ON table.column_name
+    Extract column references from SQL (delegates to :class:`SQLValidator`).
 
     Args:
         sql: SQL query string
 
     Returns:
-        Set of column names referenced in the query
-
-    Notes:
-        - Uses simple regex patterns; may not handle complex SQL perfectly
-        - For production use with LLM-generated SQL, consider sqlparse
-        - Returns lowercase column names for consistency
-
-    Example:
-        >>> sql = "SELECT name, age FROM users WHERE age > 18"
-        >>> cols = extract_columns_from_sql(sql)
-        >>> assert "name" in cols
-        >>> assert "age" in cols
+        Set of lowercase column names referenced in the query
     """
-    columns: set[str] = set()
-
-    # Normalize SQL for easier parsing
-    sql_normalized = sql.replace("\n", " ").replace("\t", " ")
-
-    # Pattern 1: SELECT column_name or SELECT table.column_name
-    select_pattern = r"SELECT\s+(?:DISTINCT\s+)?(.+?)(?:FROM|WHERE|GROUP|ORDER|LIMIT|;|$)"
-    select_match = re.search(select_pattern, sql_normalized, re.IGNORECASE)
-    if select_match:
-        select_clause = select_match.group(1)
-        # Split by comma and extract column names
-        for col in select_clause.split(","):
-            col = col.strip()
-            # Remove aliases (as alias)
-            col = re.sub(r"\s+AS\s+\w+", "", col, flags=re.IGNORECASE)
-            # Handle table.column notation
-            if "." in col:
-                col = col.split(".")[-1]
-            # Handle functions like COUNT(column)
-            col = re.sub(r"\w+\s*\((.+?)\)", r"\1", col)
-            # Clean up and add
-            col = col.strip().replace("`", "").replace('"', "")
-            if col and col != "*":
-                columns.add(col.lower())
-
-    # Pattern 2: WHERE, ON, HAVING clauses - extract all identifiers before operators
-    # Use original SQL with strings for this, we'll be careful about quotes
-    condition_pattern = r"(?:WHERE|ON|HAVING)\s+(.+?)(?:GROUP|ORDER|LIMIT|;|$)"
-    for match in re.finditer(condition_pattern, sql_normalized, re.IGNORECASE):
-        condition = match.group(1)
-        # Extract column references: word before comparison operators
-        # First remove quoted strings from condition for regex matching
-        condition_no_quotes = re.sub(r"'[^']*'|\"[^\"]*\"", "", condition)
-        col_matches = re.findall(
-            r"\b([a-zA-Z_]\w*)\s*(?:=|<|>|!=|LIKE|IN|BETWEEN|NOT)",
-            condition_no_quotes,
-            re.IGNORECASE,
-        )
-        for col in col_matches:
-            col_lower = col.lower()
-            if col_lower not in ("and", "or", "not"):
-                columns.add(col_lower)
-
-    # Pattern 3: ORDER BY, GROUP BY
-    order_group_pattern = r"(?:ORDER\s+BY|GROUP\s+BY)\s+(.+?)(?:ORDER|GROUP|LIMIT|;|$)"
-    for match in re.finditer(order_group_pattern, sql_normalized, re.IGNORECASE):
-        cols_str = match.group(1)
-        # Split by comma for multiple columns
-        for col_expr in cols_str.split(","):
-            col_expr = col_expr.strip()
-            # Remove ASC/DESC and other keywords
-            col_expr = re.sub(r"\s+(?:ASC|DESC).*$", "", col_expr, flags=re.IGNORECASE)
-            # Get the first identifier (column name)
-            # Match identifiers that may be quoted
-            id_match = re.match(r"(?:`|\")?([a-zA-Z_]\w*)(?:`|\")?", col_expr)
-            if id_match:
-                col = id_match.group(1)
-                columns.add(col.lower())
-
-    return columns
+    return SQLValidator.extract_columns(sql)
 
 
 def format_schema_for_llm(metadata: DatasetMetadata) -> str:
