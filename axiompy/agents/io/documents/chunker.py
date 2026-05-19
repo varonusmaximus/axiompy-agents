@@ -20,6 +20,7 @@ from dataclasses import dataclass
 
 from axiompy.agents.io.defaults import DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE
 from axiompy.agents.io.types import Document, DocumentChunk
+from axiompy.validators import ensure_gte, ensure_lt, ensure_positive
 
 
 @dataclass
@@ -40,12 +41,9 @@ class FixedSizeChunker:
 
     def __post_init__(self) -> None:
         """Validate chunker configuration."""
-        if self._chunk_size < 1:
-            raise ValueError("chunk_size must be positive")
-        if self._chunk_overlap < 0:
-            raise ValueError("chunk_overlap cannot be negative")
-        if self._chunk_overlap >= self._chunk_size:
-            raise ValueError("chunk_overlap must be less than chunk_size")
+        ensure_positive(self._chunk_size, "chunk_size must be positive")
+        ensure_gte(self._chunk_overlap, 0, "chunk_overlap cannot be negative")
+        ensure_lt(self._chunk_overlap, self._chunk_size, "chunk_overlap must be less than chunk_size")
 
     @property
     def chunk_size(self) -> int:
@@ -137,10 +135,8 @@ class SentenceChunker:
 
     def __post_init__(self) -> None:
         """Validate chunker configuration."""
-        if self._target_size < 1:
-            raise ValueError("target_size must be positive")
-        if self._overlap_sentences < 0:
-            raise ValueError("overlap_sentences cannot be negative")
+        ensure_positive(self._target_size, "target_size must be positive")
+        ensure_gte(self._overlap_sentences, 0, "overlap_sentences cannot be negative")
 
     @property
     def chunk_size(self) -> int:
@@ -284,8 +280,7 @@ class ParagraphChunker:
 
     def __post_init__(self) -> None:
         """Validate chunker configuration."""
-        if self._target_size < 1:
-            raise ValueError("target_size must be positive")
+        ensure_positive(self._target_size, "target_size must be positive")
 
     @property
     def chunk_size(self) -> int:

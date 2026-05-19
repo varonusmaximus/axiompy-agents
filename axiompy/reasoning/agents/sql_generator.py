@@ -6,16 +6,16 @@ with automatic validation and retry on errors.
 
 from __future__ import annotations
 
-import logging
 from typing import Any, Optional
 
+from axiompy.loggers import LoggerFactory
 from axiompy.reasoning.agents.feedback import ErrorFeedbackGenerator
 from axiompy.reasoning.agents.validation_pipeline import QueryValidationPipeline
 from axiompy.reasoning.client import AIClient
 from axiompy.reasoning.metadata import DatasetMetadata
 from axiompy.validators import SQLErrorType
 
-logger = logging.getLogger(__name__)
+logger = LoggerFactory.create_logger(__name__)
 
 
 class SQLGenerator:

@@ -6,10 +6,10 @@ Validators are composed from axiompy.validators, making them reusable across the
 
 from __future__ import annotations
 
-import logging
-from dataclasses import dataclass
 from typing import Any, List, Optional
 
+from axiompy.loggers import LoggerFactory
+from axiompy.reasoning.validators import ValidationResult
 from axiompy.validators import (
     EmptySQLValidator,
     SQLColumnValidator,
@@ -20,25 +20,7 @@ from axiompy.validators import (
     Validator,
 )
 
-logger = logging.getLogger(__name__)
-
-
-@dataclass
-class ValidationResult:
-    """
-    Result of validation pipeline.
-
-    This is the external-facing result that components like SQLGenerator expect.
-    """
-
-    valid: bool
-    errors: list[str]
-    warnings: list[str]
-    error_type: Optional[SQLErrorType] = None
-
-    def __bool__(self):
-        """Allow using validation result as boolean."""
-        return self.valid
+logger = LoggerFactory.create_logger(__name__)
 
 
 class QueryValidationPipeline:

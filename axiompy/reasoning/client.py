@@ -9,10 +9,14 @@ from __future__ import annotations
 import functools
 from typing import Any, Optional, Type, Union
 
-from axiompy.io.http import HTTPClient, HTTPClientFactory
+from axiompy.decorators import LogExecutionTime, Retry
+from axiompy.io.http import HTTPClient, HTTPClientError, HTTPClientFactory
+from axiompy.loggers import LoggerFactory
 from axiompy.reasoning.metadata import DatasetMetadata
 from axiompy.reasoning.providers.base import ProviderConfig
 from axiompy.reasoning.providers.factory import get_provider
+
+logger = LoggerFactory.create_logger(__name__)
 
 
 class AIClient:
@@ -128,7 +132,7 @@ class AIClient:
             Generated completion text
 
         Raises:
-            ConnectionError: If provider API request fails
+            HTTPClientError: If provider API request fails
             ValueError: If response format is invalid
         """
         if use_cache:
@@ -136,6 +140,14 @@ class AIClient:
         else:
             return self._generate_completion_impl(prompt, temperature, max_tokens, top_p, top_k)
 
+    @Retry(
+        logger,
+        max_attempts=3,
+        delay=0.5,
+        backoff=2.0,
+        exceptions=(HTTPClientError,),
+    )
+    @LogExecutionTime(logger)
     def _generate_completion_impl(
         self,
         prompt: str,
@@ -179,10 +191,6 @@ class AIClient:
             headers=headers if headers else None,
         )
 
-        if response.status_code >= 400:
-            raise ConnectionError(f"Provider API error ({response.status_code}): {response.text}")
-
-        # Parse response
         response_json = response.json()
         return self.provider.parse_response(response_json)
 
@@ -256,19 +264,9 @@ class AIClient:
             headers=headers if headers else None,
         )
 
-        if response.status_code >= 400:
-            raise ConnectionError(
-                f"SQL generation failed ({response.status_code}): "
-                f"{response.text if hasattr(response, 'text') else str(response)}"
-            )
-
         response_json = response.json()
         sql = self.provider.parse_response(response_json)
 
-        # Log raw SQL for debugging
-        import logging
-
-        logger = logging.getLogger(__name__)
         logger.debug(f"Raw SQL from AI: {sql[:200]}...")
 
         # Clean up SQL - extract actual SQL from potential explanation text
@@ -468,12 +466,6 @@ class AIClient:
             json=payload,
             headers=headers if headers else None,
         )
-
-        if response.status_code >= 400:
-            resp_text = response.text if hasattr(response, "text") else str(response)
-            raise ConnectionError(
-                f"Insight generation failed ({response.status_code}): {resp_text}"
-            )
 
         response_json = response.json()
         return self.provider.parse_response(response_json)

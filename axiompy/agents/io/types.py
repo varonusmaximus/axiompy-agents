@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from axiompy.agents.io.defaults import DEFAULT_MIN_SCORE, DEFAULT_TOP_K
+from axiompy.validators import ensure_in_range, ensure_not_empty, ensure_positive
 
 
 @dataclass
@@ -123,12 +124,9 @@ class Query:
 
     def __post_init__(self) -> None:
         """Validate query parameters."""
-        if not self.text.strip():
-            raise ValueError("Query text cannot be empty")
-        if self.top_k < 1:
-            raise ValueError("top_k must be at least 1")
-        if not 0.0 <= self.min_score <= 1.0:
-            raise ValueError("min_score must be between 0.0 and 1.0")
+        ensure_not_empty(self.text.strip(), "Query text cannot be empty")
+        ensure_positive(self.top_k, "top_k must be at least 1")
+        ensure_in_range(self.min_score, 0.0, 1.0, "min_score must be between 0.0 and 1.0")
 
 
 @dataclass
@@ -148,8 +146,7 @@ class SearchResult:
 
     def __post_init__(self) -> None:
         """Validate search result."""
-        if not 0.0 <= self.score <= 1.0:
-            raise ValueError("Score must be between 0.0 and 1.0")
+        ensure_in_range(self.score, 0.0, 1.0, "Score must be between 0.0 and 1.0")
 
     @property
     def content(self) -> str:
