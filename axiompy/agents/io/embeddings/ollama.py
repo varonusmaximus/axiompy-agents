@@ -144,7 +144,9 @@ class OllamaEmbedder:
                     raise AgentIOEmbeddingError(
                         f"Model '{self._model}' not found. Run: ollama pull {self._model}"
                     )
-                raise AgentIOEmbeddingError(f"Ollama API error ({response.status_code}): {error_msg}")
+                raise AgentIOEmbeddingError(
+                    f"Ollama API error ({response.status_code}): {error_msg}"
+                )
 
             data = response.json()
             embedding = data.get("embedding", [])

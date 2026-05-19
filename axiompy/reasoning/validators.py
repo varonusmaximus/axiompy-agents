@@ -95,9 +95,7 @@ class SQLValidator:
         try:
             referenced_columns = SQLValidator.extract_columns(sql)
         except (ValueError, TypeError, re.error) as e:
-            return ValidationResult(
-                valid=False, errors=[f"Failed to parse SQL: {e}"], warnings=[]
-            )
+            return ValidationResult(valid=False, errors=[f"Failed to parse SQL: {e}"], warnings=[])
 
         # Normalize schema columns to lowercase for comparison
         schema_lower = {col.lower() for col in schema_columns}

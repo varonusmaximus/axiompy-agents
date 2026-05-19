@@ -174,9 +174,7 @@ class QueryAgent:
         try:
             results = dataset_service.query(sql, limit=1000)
         except _QUERY_EXECUTION_ERRORS as e:
-            raise ConnectionError(
-                f"Failed to execute query on {selected_dataset}: {e}"
-            ) from e
+            raise ConnectionError(f"Failed to execute query on {selected_dataset}: {e}") from e
 
         # Step 4: Insights - Generate AI insights if enabled
         insights = None

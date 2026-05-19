@@ -164,7 +164,9 @@ class OpenAIEmbedder:
 
             if response.status_code != 200:
                 error_msg = response.text
-                raise AgentIOEmbeddingError(f"OpenAI API error ({response.status_code}): {error_msg}")
+                raise AgentIOEmbeddingError(
+                    f"OpenAI API error ({response.status_code}): {error_msg}"
+                )
 
             data = response.json()
 
