@@ -11,7 +11,7 @@ IO primitives for retrieval workflows: embeddings, vector stores, document sourc
 | `SourceFactory` | `SourceType` | `documents/` |
 | `ChunkerFactory` | `ChunkerType` | `documents/chunker.py` |
 
-Each factory provides `create(type, settings)` and `create_mock()`.
+Each factory provides `create(type, settings)` and `create_mock()`. `SourceSettings` validates encoding and HTTP timeout in `__post_init__`.
 
 ## Compose with kernel
 

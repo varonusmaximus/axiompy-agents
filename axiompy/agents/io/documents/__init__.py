@@ -38,6 +38,7 @@ from axiompy.agents.io.documents.filesystem import FileSystemSource
 from axiompy.agents.io.ports import DocumentSource
 from axiompy.agents.io.errors import AgentIOConfigurationError
 from axiompy.loggers import LoggerFactory
+from axiompy.validators import ensure_in_range, ensure_not_empty, ensure_positive
 
 logger = LoggerFactory.create_logger(__name__)
 
@@ -99,6 +100,13 @@ class SourceSettings:
 
     # General
     extra: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        ensure_not_empty(self.encoding, "encoding must not be empty")
+        ensure_positive(self.timeout_secs, "timeout_secs must be positive")
+        ensure_in_range(self.timeout_secs, 1, 3600, "timeout_secs must be 1-3600 seconds")
+        if self.user_agent is not None:
+            ensure_not_empty(self.user_agent, "user_agent must not be empty")
 
 
 class SourceFactory:

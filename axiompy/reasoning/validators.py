@@ -94,9 +94,9 @@ class SQLValidator:
         # Extract all referenced columns
         try:
             referenced_columns = SQLValidator.extract_columns(sql)
-        except Exception as e:
+        except (ValueError, TypeError, re.error) as e:
             return ValidationResult(
-                valid=False, errors=[f"Failed to parse SQL: {str(e)}"], warnings=[]
+                valid=False, errors=[f"Failed to parse SQL: {e}"], warnings=[]
             )
 
         # Normalize schema columns to lowercase for comparison
@@ -463,8 +463,8 @@ class SQLValidator:
                                     f"Invalid syntax: '{token_str}' followed by '{next_str}'"
                                 )
 
-            except Exception as e:
-                errors.append(f"SQL parsing failed: {str(e)}")
+            except (ValueError, TypeError, AttributeError) as e:
+                errors.append(f"SQL parsing failed: {e}")
         else:
             # Fallback to basic validation if sqlparse not available
             if not HAS_SQLPARSE and use_parser:
@@ -565,8 +565,8 @@ class SQLValidator:
             elif "syntax error" in error_msg.lower():
                 errors.append("Hint: Check SQL syntax - there may be missing/extra keywords")
 
-        except Exception as e:
-            errors.append(f"Database validation error: {str(e)}")
+        except (AttributeError, TypeError, OSError) as e:
+            errors.append(f"Database validation error: {e}")
 
         return ValidationResult(
             valid=len(errors) == 0,

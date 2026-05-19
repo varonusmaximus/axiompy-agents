@@ -9,14 +9,13 @@ from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
 
-_FALLBACK_WARNED = False
-
 
 class LangGraphRuntime(AgentRuntime):
     """Delegates to LangGraph when installed."""
 
     def __init__(self, settings: KernelSettings) -> None:
         self._settings = settings
+        self._fallback_warned = False
         try:
             import langgraph  # noqa: F401
         except ImportError as exc:
@@ -25,12 +24,11 @@ class LangGraphRuntime(AgentRuntime):
             ) from exc
 
     def run(self, goal: str, config: AgentRunConfig) -> AgentResult:
-        global _FALLBACK_WARNED
-        if not _FALLBACK_WARNED:
+        if not self._fallback_warned:
             logger.warning(
                 "LangGraphRuntime is not fully wired; using NativeAgentRuntime (MVP fallback)"
             )
-            _FALLBACK_WARNED = True
+            self._fallback_warned = True
         from axiompy.kernel.runtime.native import NativeAgentRuntime
 
         # MVP: fall back to native until full graph wiring lands

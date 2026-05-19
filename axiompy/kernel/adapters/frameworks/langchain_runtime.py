@@ -9,14 +9,13 @@ from axiompy.loggers import LoggerFactory
 
 logger = LoggerFactory.create_logger(__name__)
 
-_FALLBACK_WARNED = False
-
 
 class LangChainRuntime(AgentRuntime):
     """Delegates to LangChain when installed."""
 
     def __init__(self, settings: KernelSettings) -> None:
         self._settings = settings
+        self._fallback_warned = False
         try:
             import langchain_core  # noqa: F401
         except ImportError as exc:
@@ -26,12 +25,11 @@ class LangChainRuntime(AgentRuntime):
             ) from exc
 
     def run(self, goal: str, config: AgentRunConfig) -> AgentResult:
-        global _FALLBACK_WARNED
-        if not _FALLBACK_WARNED:
+        if not self._fallback_warned:
             logger.warning(
                 "LangChainRuntime is not fully wired; using NativeAgentRuntime (MVP fallback)"
             )
-            _FALLBACK_WARNED = True
+            self._fallback_warned = True
         from axiompy.kernel.runtime.native import NativeAgentRuntime
 
         native = NativeAgentRuntime(

@@ -23,7 +23,7 @@ print(result.output)
 | `KernelFactory` | Enum-based runtime selection (`RuntimeType`) |
 | `KernelSettings` | Explicit ports: LLM, tools, memory, events, checkpoints |
 | `NativeAgentRuntime` | Default loop: LLM → tools → observe |
-| `LangGraphRuntime` / `LangChainRuntime` | Optional extras; **currently fall back to native** with a one-time warning |
+| `LangGraphRuntime` / `LangChainRuntime` | Optional extras; **currently fall back to native** with a per-instance warning on first `run()` |
 
 ## Ports
 

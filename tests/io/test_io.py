@@ -1671,6 +1671,34 @@ class TestVectorStoreSettings:
             VectorStoreSettings(port=0)
 
 
+class TestSourceSettings:
+    """Tests for SourceSettings dataclass."""
+
+    def test_default_values(self):
+        """Test default values."""
+        from axiompy.agents.io.documents import SourceSettings
+
+        settings = SourceSettings()
+        assert settings.encoding == "utf-8"
+        assert settings.timeout_secs == 30
+
+    def test_invalid_timeout_raises(self):
+        """Test non-positive timeout_secs raises."""
+        from axiompy.agents.io.documents import SourceSettings
+        from axiompy.validators import ValidationError
+
+        with pytest.raises(ValidationError, match="timeout_secs"):
+            SourceSettings(timeout_secs=0)
+
+    def test_empty_encoding_raises(self):
+        """Test empty encoding raises."""
+        from axiompy.agents.io.documents import SourceSettings
+        from axiompy.validators import ValidationError
+
+        with pytest.raises(ValidationError, match="encoding"):
+            SourceSettings(encoding="")
+
+
 class TestChunkerSettings:
     """Tests for ChunkerSettings dataclass."""
 

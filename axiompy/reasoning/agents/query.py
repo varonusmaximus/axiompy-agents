@@ -9,9 +9,10 @@ REFACTORED VERSION - Uses composition with separate validation and generation co
 
 from __future__ import annotations
 
-import logging
 from typing import Any, Optional
 
+from axiompy.io.http import HTTPConnectionError, HTTPRequestError
+from axiompy.loggers import LoggerFactory
 from axiompy.reasoning.agents.feedback import ErrorFeedbackGenerator
 from axiompy.reasoning.agents.sql_generator import SQLGenerator
 from axiompy.reasoning.agents.validation_pipeline import QueryValidationPipeline
@@ -21,7 +22,17 @@ from axiompy.reasoning.metadata import DatasetMetadata
 from axiompy.reasoning.metadata_helpers import match_keywords
 from axiompy.reasoning.prompts import DynamicPromptBuilder
 
-logger = logging.getLogger(__name__)
+logger = LoggerFactory.create_logger(__name__)
+
+_QUERY_EXECUTION_ERRORS = (
+    ValueError,
+    ConnectionError,
+    OSError,
+    RuntimeError,
+    HTTPRequestError,
+    HTTPConnectionError,
+)
+_LLM_CALL_ERRORS = (ValueError, TypeError, HTTPRequestError, HTTPConnectionError)
 
 
 class QueryAgent:
@@ -162,8 +173,10 @@ class QueryAgent:
         # Step 3: Execution - Execute the validated query
         try:
             results = dataset_service.query(sql, limit=1000)
-        except Exception as e:
-            raise ConnectionError(f"Failed to execute query on {selected_dataset}: {str(e)}") from e
+        except _QUERY_EXECUTION_ERRORS as e:
+            raise ConnectionError(
+                f"Failed to execute query on {selected_dataset}: {e}"
+            ) from e
 
         # Step 4: Insights - Generate AI insights if enabled
         insights = None
@@ -253,8 +266,8 @@ class QueryAgent:
             # If no dataset mentioned, return first one
             return list(self.datasets.keys())[0]
 
-        except Exception:
-            # Fall back to keyword matching or first dataset
+        except _LLM_CALL_ERRORS as e:
+            logger.warning(f"AI planning failed, using keyword fallback: {e}")
             return best_match or list(self.datasets.keys())[0]
 
     def _generate_insights(
@@ -287,8 +300,8 @@ class QueryAgent:
                 use_cache=False,
             )
             return insights
-        except Exception:
-            # Fail gracefully if insights generation fails
+        except _LLM_CALL_ERRORS as e:
+            logger.warning(f"Insight generation failed: {e}")
             return None
 
     def get_dataset_names(self) -> list[str]:
