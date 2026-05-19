@@ -187,6 +187,8 @@ class OpenAIEmbedder:
 
         except AgentIOEmbeddingError:
             raise
+        except HTTPClientError as e:
+            raise AgentIOEmbeddingError(f"OpenAI API error: {e}") from e
         except Exception as e:
             raise AgentIOEmbeddingError(f"OpenAI embedding failed: {e}") from e
 

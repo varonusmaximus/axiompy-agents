@@ -143,14 +143,13 @@ class TestAIClientGenerateCompletion:
         mock_http_client = MagicMock()
         mock_factory.return_value = mock_http_client
 
-        mock_response = MagicMock()
-        mock_response.status_code = 500
-        mock_response.text = "Internal Server Error"
-        mock_http_client.post.return_value = mock_response
+        from axiompy.io.http import HTTPRequestError
+
+        mock_http_client.post.side_effect = HTTPRequestError("HTTP 500: Internal Server Error")
 
         client = AIClient(provider="ollama", model="mistral", endpoint="http://localhost:11434")
 
-        with pytest.raises(ConnectionError, match="API error"):
+        with pytest.raises(HTTPRequestError, match="500"):
             client.generate_completion("Test", use_cache=False)
 
 

@@ -16,7 +16,13 @@ from axiompy.agents.io.defaults import (
     DEFAULT_TEMPERATURE,
 )
 from axiompy.agents.io.documents.chunker import FixedSizeChunker, ParagraphChunker, SentenceChunker
-from axiompy.validators import ensure_gte, ensure_in_range, ensure_lt, ensure_not_empty, ensure_positive
+from axiompy.validators import (
+    ensure_gte,
+    ensure_in_range,
+    ensure_lt,
+    ensure_not_empty,
+    ensure_positive,
+)
 
 
 class EmbedderType(str, Enum):

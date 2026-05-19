@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
-
 from axiompy.reasoning.metadata import DatasetMetadata, ScopeMetadata, TableSchemaMetadata
 from axiompy.reasoning.metadata_helpers import extract_columns_from_sql
 from axiompy.reasoning.validators import SQLValidator, ValidationResult

@@ -43,7 +43,9 @@ class FixedSizeChunker:
         """Validate chunker configuration."""
         ensure_positive(self._chunk_size, "chunk_size must be positive")
         ensure_gte(self._chunk_overlap, 0, "chunk_overlap cannot be negative")
-        ensure_lt(self._chunk_overlap, self._chunk_size, "chunk_overlap must be less than chunk_size")
+        ensure_lt(
+            self._chunk_overlap, self._chunk_size, "chunk_overlap must be less than chunk_size"
+        )
 
     @property
     def chunk_size(self) -> int:

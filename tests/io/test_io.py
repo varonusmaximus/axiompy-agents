@@ -12,6 +12,9 @@ Run with:
 
 import pytest
 
+from axiompy.io.http import HTTPRequestError
+from axiompy.validators import ValidationError
+
 from axiompy.agents.io import (
     ChunkerSettings,
     Document,
@@ -186,23 +189,23 @@ class TestQuery:
         assert query.filters["category"] == "tech"
 
     def test_query_empty_text_raises(self):
-        """Test that empty query text raises ValueError."""
-        with pytest.raises(ValueError, match="empty"):
+        """Test that empty query text raises ValidationError."""
+        with pytest.raises(ValidationError, match="empty"):
             Query(text="")
 
     def test_query_whitespace_only_raises(self):
-        """Test that whitespace-only text raises ValueError."""
-        with pytest.raises(ValueError, match="empty"):
+        """Test that whitespace-only text raises ValidationError."""
+        with pytest.raises(ValidationError, match="empty"):
             Query(text="   ")
 
     def test_query_invalid_top_k_raises(self):
-        """Test that top_k < 1 raises ValueError."""
-        with pytest.raises(ValueError, match="top_k"):
+        """Test that top_k < 1 raises ValidationError."""
+        with pytest.raises(ValidationError, match="top_k"):
             Query(text="Test", top_k=0)
 
     def test_query_invalid_min_score_raises(self):
-        """Test that invalid min_score raises ValueError."""
-        with pytest.raises(ValueError, match="min_score"):
+        """Test that invalid min_score raises ValidationError."""
+        with pytest.raises(ValidationError, match="min_score"):
             Query(text="Test", min_score=1.5)
 
 
@@ -238,7 +241,7 @@ class TestSearchResult:
         assert result.document_metadata.title == "Test Doc"
 
     def test_search_result_invalid_score_raises(self):
-        """Test that invalid score raises ValueError."""
+        """Test that invalid score raises ValidationError."""
         chunk = DocumentChunk(
             id="c1",
             document_id="d1",
@@ -247,7 +250,7 @@ class TestSearchResult:
             start_char=0,
             end_char=4,
         )
-        with pytest.raises(ValueError, match="Score"):
+        with pytest.raises(ValidationError, match="Score"):
             SearchResult(chunk=chunk, score=1.5)
 
 
@@ -484,14 +487,14 @@ class TestSentenceChunker:
         """Test invalid target size raises error."""
         from axiompy.agents.io.documents.chunker import SentenceChunker
 
-        with pytest.raises(ValueError, match="target_size must be positive"):
+        with pytest.raises(ValidationError, match="target_size must be positive"):
             SentenceChunker(_target_size=0)
 
     def test_negative_overlap_sentences(self):
         """Test negative overlap raises error."""
         from axiompy.agents.io.documents.chunker import SentenceChunker
 
-        with pytest.raises(ValueError, match="overlap_sentences cannot be negative"):
+        with pytest.raises(ValidationError, match="overlap_sentences cannot be negative"):
             SentenceChunker(_target_size=100, _overlap_sentences=-1)
 
     def test_chunk_preserves_metadata(self):
@@ -623,7 +626,7 @@ class TestParagraphChunker:
         """Test invalid target size raises error."""
         from axiompy.agents.io.documents.chunker import ParagraphChunker
 
-        with pytest.raises(ValueError, match="target_size must be positive"):
+        with pytest.raises(ValidationError, match="target_size must be positive"):
             ParagraphChunker(_target_size=0)
 
     def test_chunk_preserves_metadata(self):
@@ -950,7 +953,9 @@ class TestOpenAIEmbedder:
         from axiompy.agents.io.embeddings.openai import OpenAIEmbedder
 
         def mock_post(*args, **kwargs):
-            return mock_error_response
+            raise HTTPRequestError(
+                f"HTTP {mock_error_response.status_code}: {mock_error_response.text}"
+            )
 
         embedder = OpenAIEmbedder(api_key="sk-test")
         monkeypatch.setattr(embedder._client, "post", mock_post)
@@ -1112,7 +1117,9 @@ class TestOllamaEmbedder:
         from axiompy.agents.io.embeddings.ollama import OllamaEmbedder
 
         def mock_post(*args, **kwargs):
-            return mock_error_response
+            raise HTTPRequestError(
+                f"HTTP {mock_error_response.status_code}: {mock_error_response.text}"
+            )
 
         embedder = OllamaEmbedder()
         monkeypatch.setattr(embedder._client, "post", mock_post)
@@ -1125,7 +1132,9 @@ class TestOllamaEmbedder:
         from axiompy.agents.io.embeddings.ollama import OllamaEmbedder
 
         def mock_post(*args, **kwargs):
-            return mock_404_response
+            raise HTTPRequestError(
+                f"HTTP {mock_404_response.status_code}: {mock_404_response.text}"
+            )
 
         embedder = OllamaEmbedder()
         monkeypatch.setattr(embedder._client, "post", mock_post)

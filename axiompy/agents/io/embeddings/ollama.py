@@ -159,8 +159,14 @@ class OllamaEmbedder:
 
         except AgentIOEmbeddingError:
             raise
+        except HTTPClientError as e:
+            error_msg = str(e)
+            if "404" in error_msg:
+                raise AgentIOEmbeddingError(
+                    f"Model '{self._model}' not found. Run: ollama pull {self._model}"
+                ) from e
+            raise AgentIOEmbeddingError(f"Ollama API error: {error_msg}") from e
         except Exception as e:
-            # Check for connection errors
             if "Connection" in str(e) or "refused" in str(e).lower():
                 raise AgentIOEmbeddingError(
                     f"Cannot connect to Ollama at {self._host}. "

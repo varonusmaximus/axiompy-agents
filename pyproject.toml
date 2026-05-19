@@ -15,7 +15,7 @@ packages = [{ include = "axiompy" }]
 [tool.poetry.dependencies]
 python = ">=3.12"
 # PyPI only has axiompy 0.2.x; use Git until 2.0 is published.
-axiompy = { git = "https://github.com/varonusmaximus/axiompy.git", rev = "9c904b9", extras = [
+axiompy = { git = "https://github.com/varonusmaximus/axiompy.git", rev = "281bb0f", extras = [
     "http",
     "databases",
     "storage",
@@ -36,7 +36,7 @@ authors = [{ name = "Jorge Varona", email = "varonusmaximus@users.noreply.github
 # PyPI only has axiompy 0.2.x; pin Git until 2.0 is published (then use >=2.0.0,<3.0.0).
 dependencies = [
     # sqlparse is transitive via axiompy for SQL validation in reasoning.
-    "axiompy[http,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@9c904b9",
+    "axiompy[http,databases,storage] @ git+https://github.com/varonusmaximus/axiompy.git@281bb0f",
 ]
 
 [project.urls]
