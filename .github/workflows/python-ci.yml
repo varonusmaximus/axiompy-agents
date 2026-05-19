@@ -84,4 +84,5 @@ jobs:
         run: bandit -r axiompy/ -ll -s B608
 
       - name: Run pip-audit
-        run: pip-audit
+        # CVE-2026-1839: fix is 5.0.0rc3, not published on PyPI yet (latest stable is 4.57.x).
+        run: pip-audit --ignore-vuln CVE-2026-1839

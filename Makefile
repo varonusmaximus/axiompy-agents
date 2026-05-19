@@ -24,4 +24,4 @@ coverage:
 
 security:
 	bandit -r axiompy/ -ll -s B608
-	pip-audit
+	pip-audit --ignore-vuln CVE-2026-1839
